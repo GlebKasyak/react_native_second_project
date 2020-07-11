@@ -1,0 +1,15 @@
+import { FC } from "react";
+import { NavigationStackOptions, NavigationStackScreenProps } from "react-navigation-stack";
+import { NavigationBottomTabOptions, NavigationTabScreenProps } from "react-navigation-tabs";
+import { NavigationDrawerOptions, NavigationDrawerScreenProps } from "react-navigation-drawer";
+
+import { ThemeType } from "../assets/styles/Theme";
+
+
+export type DefaultNavigationOptionsType<Props> = Omit<Props, "screenProps"> & {
+    screenProps: ThemeType | any
+};
+
+export type NavigationStackProps<P> = FC<P & DefaultNavigationOptionsType<NavigationStackScreenProps>> & { navigationOptions?: NavigationStackOptions | ((props: DefaultNavigationOptionsType<NavigationStackScreenProps>) => NavigationStackOptions) };
+export type NavigationTabProps<P> = FC<P & NavigationTabScreenProps> & { navigationOptions?: NavigationBottomTabOptions | ((props: NavigationTabScreenProps) => NavigationBottomTabOptions) };
+export type NavigationDrawerProps<P> = FC<P & NavigationDrawerScreenProps> & { navigationOptions?: NavigationDrawerOptions | ((props: NavigationDrawerScreenProps) => NavigationDrawerOptions) };

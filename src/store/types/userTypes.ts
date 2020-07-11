@@ -1,0 +1,5 @@
+export const SIGN_UP_USER = "users.reducer/SIGN_UP_USER";
+export const SIGN_IN_USER = "users.reducer/SIGN_IN_USER";
+export const LOGOUT_USER = "users.reducer/LOGOUT_USER";
+
+export const AUTHORIZED_USER = "users.reducer/AUTHORIZED_USER";
