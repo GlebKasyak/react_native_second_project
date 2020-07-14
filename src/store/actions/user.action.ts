@@ -6,5 +6,6 @@ export const userActions = {
     signInUser: (payload: User) => ({ type: userTypes.SIGN_IN_USER, payload } as const),
     logoutUser: () => ({ type: userTypes.LOGOUT_USER } as const),
 
-    setAuth: () => ({ type: userTypes.AUTHORIZED_USER } as const)
+    setAuthRequest: () => ({ type: userTypes.AUTHORIZED_USER_REQUEST } as const),
+    setAuthSuccess: () => ({ type: userTypes.AUTHORIZED_USER_SUCCESS } as const)
 };

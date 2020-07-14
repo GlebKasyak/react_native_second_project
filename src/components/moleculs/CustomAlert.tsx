@@ -27,7 +27,7 @@ const CustomAlert: FC<Props> = (
         negativeButtonText,
         onNegativeButtonPress
     }) => {
-    const theme = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
+    const { theme } = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
 
     return (
         <View
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     mainContainer: {
-        zIndex: 2,
+        zIndex: 100,
         flexDirection: "column",
         height: "35%",
         width: "80%",

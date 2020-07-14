@@ -11,7 +11,7 @@ type Props = {
 };
 
 const AppText: FC<Props> = ({ children, style }) => {
-    const theme = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
+    const { theme } = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
 
     return  (
         <Text style={{ ...styles.default, color: theme.TEXT, ...style }} >

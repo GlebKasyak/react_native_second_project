@@ -25,7 +25,7 @@ type WrapperType = ComponentType<TouchableNativeFeedbackProps | TouchableOpacity
 
 const AppButton: FC<Props> = ({ children, onPress, style }) => {
     const Wrapper: WrapperType = Platform.OS === "android" ? TouchableNativeFeedback : TouchableOpacity;
-    const theme = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
+    const { theme } = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
 
     return (
         <Wrapper onPress={ onPress } activeOpacity={0.3} >

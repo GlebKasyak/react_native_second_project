@@ -6,12 +6,16 @@ import { Classes } from "../../assets/styles";
 import { AppStateType } from "../../store/reducers";
 import { AppSelectors } from "../../store/selectors";
 
-const AppLoader: FC = () => {
-    const theme = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
+type Props = {
+    size?: number
+}
+
+const AppLoader: FC<Props> = ({ size = 70 }) => {
+    const { theme } = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
 
     return (
         <View style={ styles.center } >
-            <ActivityIndicator size={70} color={ theme.BACKGROUND } />
+            <ActivityIndicator size={ size } color={ theme.BACKGROUND } />
         </View>
     )
 };

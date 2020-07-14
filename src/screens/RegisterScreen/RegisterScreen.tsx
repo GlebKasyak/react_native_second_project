@@ -84,7 +84,8 @@ const styles = StyleSheet.create({
     container: {
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 15
+        marginTop: 15,
+        flex: 0
     },
     wrapper: {
         width: "80%"

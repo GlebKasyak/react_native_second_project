@@ -12,6 +12,7 @@ import { DoNotAuth } from "../../hoc";
 import { Classes } from "../../assets/styles";
 import { NavigationStackProps } from "../../interfaces/common";
 import { StorageKeys } from "../../shared/constants";
+import NavigationUrls from "../../navigation/navigationUrls";
 
 import { userActions } from "../../store/actions/user.action";
 import { AppStateType } from "../../store/reducers";
@@ -20,12 +21,13 @@ type MapDispatchToProps = {
     logoutUser: () => void
 };
 
-const LogoutScreen: NavigationStackProps<MapDispatchToProps> = ({ logoutUser }) => {
+const LogoutScreen: NavigationStackProps<MapDispatchToProps> = ({ logoutUser, navigation }) => {
     const [visibleAlert, setVisibleAlert] = useState(false);
 
     const onLogout = async () => {
         await AsyncStorage.removeItem(StorageKeys.IS_AUTH);
         logoutUser();
+        navigation.navigate(NavigationUrls.LOGIN);
     };
 
     return (

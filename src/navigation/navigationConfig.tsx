@@ -14,13 +14,13 @@ export const setDefaultStackNavigationOptions = (title?: string) => ({
             fontFamily: Fonts.OPEN_SANS_BOLD,
         },
         headerStyle: {
-            backgroundColor: screenProps.MAIN,
+            backgroundColor: screenProps.theme.MAIN,
             height: 50,
             borderBottomWidth: 2,
-            borderBottomColor: screenProps.LINE
+            borderBottomColor: screenProps.theme.LINE
         },
-        headerTintColor: screenProps.TEXT,
-    })
+        headerTintColor: screenProps.theme.HEADERS
+    }),
 });
 
 type TabBarIconProps = {
@@ -35,8 +35,8 @@ export const serTabsNavigationOptions = (title: string, iconName: string) => ({
         tabBarIcon: ({ tintColor }: TabBarIconProps) =>
             <Icon name={ iconName } size={25} color={ tintColor } />,
         tabBarOptions: {
-            inactiveTintColor: screenProps.DEFAULT,
-            activeTintColor: screenProps.ACTIVE,
+            inactiveTintColor: screenProps.theme.DEFAULT,
+            activeTintColor: screenProps.theme.ACTIVE,
             labelStyle: {
                 fontSize: TextSize.MEDIUM_TEXT,
                 paddingBottom: 7
@@ -46,9 +46,9 @@ export const serTabsNavigationOptions = (title: string, iconName: string) => ({
             },
             style: {
                 height: 70,
-                backgroundColor: screenProps.MAIN,
+                backgroundColor: screenProps.theme.MAIN,
                 borderTopWidth: 2,
-                borderTopColor: screenProps.LINE
+                borderTopColor: screenProps.theme.LINE
             }
         }
     })

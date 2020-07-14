@@ -11,7 +11,7 @@ export default createStackNavigator({
         headerTitleStyle: {
             left: -22
         },
-        headerPressColorAndroid: screenProps.ACTIVE
+        headerPressColorAndroid: screenProps.theme.ACTIVE
     }),
     defaultNavigationOptions: {
         title: "Register",

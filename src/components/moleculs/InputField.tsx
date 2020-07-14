@@ -29,11 +29,11 @@ const InputField: FC<Props> = (
         onEndEditing,
         ...props
     }) => {
-    const theme = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
+    const { theme } = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
 
     return (
         <View style={ styles.wrapper } >
-            <AppText style={{ ...styles.label, color: theme.LABEL }} >{ label }</AppText>
+            <AppText style={{ ...styles.label, color: theme.TEXT_2 }} >{ label }</AppText>
             <TextInput
                 value={ value }
                 onChangeText={ text => onChange(text, fieldName) }

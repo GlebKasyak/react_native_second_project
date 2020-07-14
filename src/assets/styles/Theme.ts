@@ -1,15 +1,19 @@
 import Colors from "./Colors";
 
-export enum THEME_NAME {
+export const DEFAULT_THEME = "BLUE";
+
+export enum THEME_NAMES {
     BLUE = "BLUE",
     BLACK = "BLACK",
 };
 
 export const THEMES = {
-    [THEME_NAME.BLUE]: {
+    [THEME_NAMES.BLUE]: {
         MAIN: Colors.DARK_BLUE,
+        HEADERS: Colors.WHITE,
         TEXT: Colors.WHITE,
-        LABEL: Colors.LIGHT_BLACK,
+        TEXT_2: Colors.LIGHT_BLACK,
+        TEXT_3: Colors.DARK_BLUE,
         ACTIVE: Colors.WHITE,
         DEFAULT: Colors.LIGHT_GREY,
         SCREEN: Colors.MILK,
@@ -19,10 +23,12 @@ export const THEMES = {
         BACKGROUND_2: Colors.BLUE,
         OVERFLOW: Colors.TRANSPARENT_BLACK
     },
-    [THEME_NAME.BLACK]: {
+    [THEME_NAMES.BLACK]: {
         MAIN: Colors.BLACK,
+        HEADERS: Colors.WHITE,
         TEXT: Colors.WHITE,
-        LABEL: Colors.WHITE,
+        TEXT_2: Colors.WHITE,
+        TEXT_3: Colors.ORANGE,
         ACTIVE: Colors.ORANGE,
         DEFAULT: Colors.LIGHT_GREY,
         SCREEN: Colors.LIGHT_BLACK,
@@ -36,8 +42,10 @@ export const THEMES = {
 
 export type ThemeType = {
     MAIN: Colors,
+    HEADERS: Colors,
     TEXT: Colors,
-    LABEL: Colors,
+    TEXT_2: Colors,
+    TEXT_3: Colors,
     ACTIVE: Colors,
     DEFAULT: Colors
     SCREEN: Colors,
@@ -48,4 +56,4 @@ export type ThemeType = {
     OVERFLOW: Colors
 };
 
-export const getActiveTheme = (theme: THEME_NAME): ThemeType => THEMES[theme];
+export const getActiveTheme = (theme: THEME_NAMES): ThemeType => THEMES[theme];

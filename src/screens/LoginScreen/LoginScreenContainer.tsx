@@ -17,6 +17,7 @@ import { getInputValidation } from "../RegisterScreen/validation";
 import { RegisterData } from "../RegisterScreen/InitialFormData";
 import { setLoginDataToAsyncStorage } from "./rememberMe";
 import { StorageKeys } from "../../shared/constants";
+import { setAuthInAsyncStorage } from "../../shared/helpers";
 
 type MapStateToProps = {
     isAuth: boolean
@@ -104,22 +105,18 @@ const LoginScreenContainer: NavigationStackProps<Props> = ({ screenProps, signIn
     }, []);
 
     useEffect(() => {
-        const setAuthInAsyncStorage = async () => {
-            await AsyncStorage.setItem(StorageKeys.IS_AUTH, JSON.stringify(isAuth));
-        };
-
         isAuth && setAuthInAsyncStorage();
     }, [isAuth])
 
     return <LoginScreen
         formData={ formData }
         checked={ checked }
-        checkBoxColor={ screenProps.BACKGROUND }
+        checkBoxColor={ screenProps.theme.BACKGROUND }
         onChange={ handleChange }
         onEndEditing={ endEditingHandler }
         onToggle={ newValue => setChecked(newValue) }
         onSubmit={ handleSubmit }
-        screenProps={ screenProps }
+        theme={ screenProps.theme }
     />
 };
 

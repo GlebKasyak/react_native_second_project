@@ -2,12 +2,15 @@ import { Reducer } from "redux";
 
 import * as appTypes from "../types/appTypes";
 import { appActions } from "../actions/app.action";
-import { THEME_NAME, THEMES, getActiveTheme } from "../../assets/styles/Theme";
+import { THEMES, DEFAULT_THEME, getActiveTheme } from "../../assets/styles/Theme";
 import { InferActionsTypes } from "./index";
 
 const initialState = {
-    themeName: THEME_NAME.BLUE as THEME_NAME,
-    theme: THEMES[THEME_NAME.BLUE]
+    appTheme: {
+        themeName: DEFAULT_THEME,
+        theme: THEMES[DEFAULT_THEME],
+    },
+    isLoading: true
 };
 
 type StateType = typeof initialState;
@@ -15,11 +18,18 @@ type ActionTypes = InferActionsTypes<typeof appActions>;
 
 const reducer: Reducer<StateType, ActionTypes> = (state = initialState, action: ActionTypes): StateType => {
     switch (action.type) {
-        case appTypes.SET_APP_THEME:
+        case appTypes.SET_APP_THEME_SUCCESS:
             return {
                 ...state,
-                themeName: action.payload,
-                theme: getActiveTheme(action.payload)
+                appTheme: {
+                    themeName: action.payload,
+                    theme: getActiveTheme(action.payload)
+                }
+            };
+        case appTypes.APP_IS_LOADING:
+            return {
+                ...state,
+                isLoading: action.payload
             };
         default:
             return state;

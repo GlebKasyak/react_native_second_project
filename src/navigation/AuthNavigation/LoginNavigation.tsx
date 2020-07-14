@@ -12,7 +12,7 @@ import { DefaultNavigationOptionsType } from "../../interfaces/common";
 export default createStackNavigator({
     Login: LoginScreen,
 }, {
-    navigationOptions: ({  navigation, screenProps }: DefaultNavigationOptionsType<NavigationStackScreenProps>) => ({
+    navigationOptions: ({ navigation, screenProps }: DefaultNavigationOptionsType<NavigationStackScreenProps>) => ({
         headerRight: () => (
             <TouchableOpacity
                 onPress={ () => navigation.navigate("Register") }
@@ -20,7 +20,7 @@ export default createStackNavigator({
                 style={ styles.btnWrapper }
             >
                 <AppText style={ styles.text } >Sign up</AppText>
-                <Icon name="login" size={18} color={ screenProps.TEXT } style={ styles.icon } />
+                <Icon name="login" size={18} color={ screenProps.theme.TEXT } style={ styles.icon } />
             </TouchableOpacity >
         )
     }),

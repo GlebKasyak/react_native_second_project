@@ -3,11 +3,14 @@ import { NavigationStackOptions, NavigationStackScreenProps } from "react-naviga
 import { NavigationBottomTabOptions, NavigationTabScreenProps } from "react-navigation-tabs";
 import { NavigationDrawerOptions, NavigationDrawerScreenProps } from "react-navigation-drawer";
 
-import { ThemeType } from "../assets/styles/Theme";
+import { ThemeType, THEME_NAMES } from "../assets/styles/Theme";
 
 
 export type DefaultNavigationOptionsType<Props> = Omit<Props, "screenProps"> & {
-    screenProps: ThemeType | any
+    screenProps: {
+        theme: ThemeType,
+        themeName: THEME_NAMES
+    } | any
 };
 
 export type NavigationStackProps<P> = FC<P & DefaultNavigationOptionsType<NavigationStackScreenProps>> & { navigationOptions?: NavigationStackOptions | ((props: DefaultNavigationOptionsType<NavigationStackScreenProps>) => NavigationStackOptions) };

@@ -7,7 +7,8 @@ import { Auth } from "../../hoc";
 
 import { NavigationStackProps } from "../../interfaces/common";
 import { User } from "../../interfaces/user";
-import NavigationUrls from "../../navigation/navigationUrls";
+import { setAuthInAsyncStorage } from "../../shared/helpers";
+
 import { initialFormData, initialConfirmPasswordData, RegisterData } from "./InitialFormData";
 import { RegisterNames, getInputValidation, getConfirmInputValidation } from "./validation";
 
@@ -18,7 +19,7 @@ type MapDispatchToProps = {
     signUpUser: (data: User) => void
 };
 
-const RegisterScreenContainer: NavigationStackProps<MapDispatchToProps> = ({ signUpUser, navigation }) => {
+const RegisterScreenContainer: NavigationStackProps<MapDispatchToProps> = ({ signUpUser }) => {
     const [formData, setFormData] = useState(initialFormData);
     const [confirmPassword, setConfirmPassword] = useState(initialConfirmPasswordData);
 
@@ -76,8 +77,7 @@ const RegisterScreenContainer: NavigationStackProps<MapDispatchToProps> = ({ sig
 
             signUpUser(data);
             setFormData(initialFormData);
-
-            navigation.navigate(NavigationUrls.MAIN);
+            setAuthInAsyncStorage();
         }
     };
 
@@ -94,7 +94,7 @@ const RegisterScreenContainer: NavigationStackProps<MapDispatchToProps> = ({ sig
 
 export default compose(
     connect<{}, MapDispatchToProps, {}, AppStateType>(
-        null,
-        { signUpUser: userActions.signUpUser }),
+    null,
+    { signUpUser: userActions.signUpUser }),
     Auth
 )(RegisterScreenContainer) as NavigationStackProps<{}>

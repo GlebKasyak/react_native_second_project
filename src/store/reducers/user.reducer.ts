@@ -28,7 +28,7 @@ const reducer :Reducer<StateType, ActionTypes> = (state = initialState, action):
             };
         case userTypes.LOGOUT_USER:
             return initialState;
-        case userTypes.AUTHORIZED_USER:
+        case userTypes.AUTHORIZED_USER_SUCCESS:
             return {
                 ...state,
                 isAuth: true

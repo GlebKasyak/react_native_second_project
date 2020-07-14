@@ -6,7 +6,7 @@ import { Container, AppButton, AppText } from "../../components/atoms";
 import { InputField } from "../../components/moleculs";
 
 import { LoginFields, LoginFormData } from "./InitialFormData";
-import { TextSize, Colors } from "../../assets/styles";
+import { TextSize, Colors, Classes } from "../../assets/styles";
 import { ThemeType } from "../../assets/styles/Theme";
 
 type Props = {
@@ -17,7 +17,7 @@ type Props = {
     onEndEditing: (value: string, fieldName?: LoginFields) => void,
     onToggle: (nexValue: boolean) => void
     onSubmit: () => void,
-    screenProps: ThemeType
+    theme: ThemeType
 };
 
 const LoginScreen: FC<Props> = (
@@ -29,7 +29,7 @@ const LoginScreen: FC<Props> = (
         onEndEditing,
         onToggle,
         onSubmit,
-        screenProps
+        theme
     }) => (
     <Container style={ styles.container } >
         <View style={ styles.wrapper } >
@@ -56,7 +56,7 @@ const LoginScreen: FC<Props> = (
                     tintColors={{ true: checkBoxColor }}
                     onValueChange={ onToggle }
                 />
-                <AppText style={{ ...styles.text, color: screenProps.LABEL }} >
+                <AppText style={{ ...styles.text, color: theme.TEXT_2 }} >
                     Remember me
                 </AppText>
             </View>
@@ -70,11 +70,7 @@ const LoginScreen: FC<Props> = (
 );
 
 const styles = StyleSheet.create({
-    container: {
-        justifyContent: "center",
-        alignItems: "center",
-        flex: 1
-    },
+    container: Classes.CENTER,
     wrapper: {
       width: "90%"
     },
