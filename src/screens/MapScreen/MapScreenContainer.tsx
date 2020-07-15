@@ -1,77 +1,35 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { PermissionsAndroid, Platform } from "react-native";
-import Geolocation from "react-native-geolocation-service";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
 
 import MapScreen from "./MapScreen";
-import { ErrorMessage } from "../../components/moleculs";
-import { AppLoader, Container } from "../../components/atoms";
+import { Container } from "../../components/atoms";
 
-const MapScreenContainer = () => {
-    const [location, setLocation] = useState({ latitude: 0, longitude: 0 });
+import { NavigationStackProps } from "../../interfaces/common";
+import markets from "../../shared/markets";
 
-    const [isLoading, setIsLoading] = useState(true);
+import { UserSelectors } from "../../store/selectors";
+import { AppStateType } from "../../store/reducers";
+
+const MapScreenContainer: NavigationStackProps<{}> = ({ screenProps }) => {
+    const { latitude, longitude } = useSelector((state: AppStateType) => UserSelectors.getUserGeolocation(state));
+
     const [isMapReady, serIsMapReady] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
+    const [circleRadius, setCircleRadius] = useState(0);
 
-    const getGeolocation = useCallback(  async () => {
-        if(Platform.OS === "ios") {
-            await Geolocation.requestAuthorization("whenInUse");
-        };
-
-        try {
-            const granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,{
-                    title: 'Location Access Required',
-                    message: 'This App needs to Access your location',
-                    buttonNegative: "Cancel",
-                    buttonPositive: "OK"
-                }
-            );
-
-            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-                await Geolocation.getCurrentPosition(({ coords }) => {
-                        setLocation({
-                            latitude: coords.latitude,
-                            longitude: coords.longitude
-                        });
-                    },
-                    error => setErrorMessage(error.message),
-                    { enableHighAccuracy: false, timeout: 50000 });
-            } else {
-                setErrorMessage("Permission Denied");
-            }
-        } catch (err) {
-            setErrorMessage(err)
-        }
-
-        setIsLoading(false);
-    }, []);
-
-    useEffect(() => {
-        let isCanceled = false;
-        getGeolocation();
-
-        return () => {
-            isCanceled = true;
-        }
-    }, [getGeolocation]);
-
-    let component;
-
-    if(isLoading) {
-        component = <AppLoader />
-    } else if(!!errorMessage) {
-        component = <ErrorMessage message={ errorMessage } onFetch={ getGeolocation } />
-    } else {
-        component = <MapScreen
-            latitude={ location.latitude }
-            longitude={ location.longitude }
-            isMapReady={ isMapReady }
-            onLayout={ () => serIsMapReady(true) }
-        />
-    };
-
-    return <Container style={{ flex: 1, padding: 0 }} >{ component }</Container>
+    return (
+        <Container style={{ flex: 1, padding: 0 }} >
+            <MapScreen
+                latitude={ latitude }
+                longitude={ longitude }
+                isMapReady={ isMapReady }
+                onLayout={ () => serIsMapReady(true) }
+                circleRadius={ circleRadius }
+                onRadiusChange={ (value: number) => setCircleRadius(value) }
+                markets={ markets }
+                theme={ screenProps.theme }
+            />
+        </Container>
+    )
 };
 
 export default MapScreenContainer;
