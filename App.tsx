@@ -7,6 +7,7 @@ import { Container, AppLoader } from "./src/components/atoms";
 
 import SwitchNavigator from "./src/navigation/SwitchNavigator";
 import { StorageKeys } from "./src/shared/constants";
+import { useGeolocation } from "./src/hooks";
 import { THEME_NAMES } from "./src/assets/styles/Theme";
 
 import store from "./src/store";
@@ -14,11 +15,13 @@ import { AppStateType } from "./src/store/reducers";
 import { userActions } from "./src/store/actions/user.action";
 import { appActions } from "./src/store/actions/app.action";
 import { AppSelectors } from "./src/store/selectors";
+import {ErrorMessage} from "./src/components/moleculs";
 
 const App = () => {
     const dispatch = useDispatch();
     const theme = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
     const isLoading = useSelector((state: AppStateType) => AppSelectors.getLoading(state));
+    const [getGeolocation, errorMessage] = useGeolocation();
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -42,7 +45,13 @@ const App = () => {
                 <AppLoader />
             </Container>
         )
-    }
+    };
+
+    if(errorMessage) {
+        return <ErrorMessage
+            message={ errorMessage } onFetch={ getGeolocation }
+        />
+    };
 
     return <SwitchNavigator screenProps={ theme }  />
 };

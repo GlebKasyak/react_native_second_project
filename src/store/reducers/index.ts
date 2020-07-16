@@ -5,7 +5,7 @@ import user from "./user.reducer";
 
 const rootReducer = combineReducers({
     app,
-    user
+    user,
 });
 
 type RootReducerType = typeof rootReducer;

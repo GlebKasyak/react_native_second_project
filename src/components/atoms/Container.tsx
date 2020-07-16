@@ -35,7 +35,8 @@ const Container: FC<Props> = ({ style, typeOfContainer, children }) => {
 const styles = StyleSheet.create({
     container: {
         padding: 15,
-        flex: 1
+        flex: 1,
+        position: "relative"
     }
 });
 

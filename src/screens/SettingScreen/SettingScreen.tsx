@@ -34,10 +34,10 @@ const SettingScreen: NavigationStackProps<{}> = ({ screenProps }) => {
             <View style={ styles.toggleWrapper } >
                 <AppText style={{ color }} >Change application theme:</AppText>
                 <Switch
+                    value={ isEnabled }
+                    onValueChange={ toggleHandler }
                     trackColor={{ false: screenProps.theme.DEFAULT, true: screenProps.theme.DEFAULT }}
                     thumbColor={ isEnabled ? screenProps.theme.ACTIVE : screenProps.theme.DEFAULT }
-                    onValueChange={ toggleHandler }
-                    value={ isEnabled }
                     style={ styles.toggle }
                 />
             </View>

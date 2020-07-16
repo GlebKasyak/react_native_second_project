@@ -11,6 +11,10 @@ const initialState = {
         email: "sonyck94@gmail.com",
         password: "12345",
     },
+    geolocation: {
+        latitude: 0,
+        longitude: 0
+    },
     isAuth: false
 };
 
@@ -33,6 +37,11 @@ const reducer :Reducer<StateType, ActionTypes> = (state = initialState, action):
                 ...state,
                 isAuth: true
             };
+        case userTypes.SET_USER_GEOLOCATION:
+            return {
+                ...state,
+                geolocation: action.payload
+            }
         default:
             return state;
     }

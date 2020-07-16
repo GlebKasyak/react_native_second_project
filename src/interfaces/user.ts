@@ -5,3 +5,8 @@ export type User = {
     email: string,
     password: string,
 };
+
+export type GeolocationType = {
+    latitude: number,
+    longitude: number
+};

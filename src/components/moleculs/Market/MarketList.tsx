@@ -30,7 +30,6 @@ const MarketList: FC<Props> = ({ data, isLoading, onOpen, nextPage }) => (
 const styles = StyleSheet.create({
     wrapper: {
         paddingVertical: 10,
-        marginBottom: 25
     }
 });
 
