@@ -17,11 +17,14 @@ export const setAuthInAsyncStorage = async () => {
     await AsyncStorage.setItem(StorageKeys.IS_AUTH, JSON.stringify(true));
 };
 
-export const sortMarketsByDistance = (data: Array<MarketType>,location: GeolocationType) => {
-    const markets = data.map(({ lon, lat, ...rest }) => ({
-        ...rest,
-        distance: getDistance(location, { lon, lat })
-    }));
+export const addDistanceToMarkets = (data: Array<MarketType>, location: GeolocationType) => (
+    data.map(market => ({
+        ...market,
+        distance: getDistance(location, { lon: market.lon, lat: market.lat })
+    }))
+);
 
-    return markets.sort(((a, b) => a.distance - b.distance));
+export const getCurrentTime = () => {
+    const today = new Date();
+    return `${ today.getHours() }:${ today.getMinutes() }`
 };
