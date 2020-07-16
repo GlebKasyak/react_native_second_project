@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { View, StyleSheet, Dimensions, Image, ImageBackground, Switch } from "react-native";
+import { View, StyleSheet, Dimensions, Switch } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker, Callout, Circle } from "react-native-maps";
 import Icon from "react-native-vector-icons/FontAwesome";
 import Slider from "@react-native-community/slider";
@@ -93,7 +93,7 @@ const MapScreen: FC<Props> = (
                         </Marker >
                         { !!markets.length && (
                             markets.map(market => {
-                                const { type, id, lat, lon, image, title, isVisible } = market;
+                                const { type, id, lat, lon, title, isVisible } = market;
 
                                 return (!circleRadius || isVisible) && (
                                     <Marker

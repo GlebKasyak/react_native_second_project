@@ -25,7 +25,5 @@ export default createBottomTabNavigator({
         screen: LogoutNavigation,
         ...serTabsNavigationOptions("Logout", "ios-close-circle")
     },
-},{
-    // initialRouteName: "Map"
 });
 
