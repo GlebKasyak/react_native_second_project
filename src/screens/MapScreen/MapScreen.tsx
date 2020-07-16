@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { View, StyleSheet, Text, Dimensions, Image, ImageBackground } from "react-native";
+import { View, StyleSheet, Dimensions, Image, ImageBackground, Switch } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker, Callout, Circle } from "react-native-maps";
 import Icon from "react-native-vector-icons/FontAwesome";
 import Slider from "@react-native-community/slider";
@@ -8,7 +8,9 @@ import hexToRgba from "hex-to-rgba";
 import { AppText, AppTextBold } from "../../components/atoms";
 
 import { MarketType } from "../../interfaces/market";
-import { ThemeType } from "../../assets/styles/Theme";
+import { darkMapStyle } from "../../shared/mapStyles";
+import { ThemeType, THEME_NAMES, DEFAULT_THEME } from "../../assets/styles/Theme";
+import { Colors } from "../../assets/styles";
 
 type Props = {
     latitude: number,
@@ -18,7 +20,10 @@ type Props = {
     circleRadius: number,
     onRadiusChange: (value: number) => void,
     markets: Array<MarketType>,
-    theme: ThemeType
+    isEnabled: boolean,
+    onToggle: () => void,
+    theme: ThemeType,
+    themeName: THEME_NAMES
 };
 
 const MarkerIcons = {
@@ -36,11 +41,31 @@ const MapScreen: FC<Props> = (
         circleRadius,
         onRadiusChange,
         markets,
-        theme
+        isEnabled,
+        onToggle,
+        theme,
+        themeName
     }) => {
 
     return (
         <View style={ styles.container } >
+            <View style={{
+                ...styles.toggleWrapper,
+                backgroundColor: hexToRgba(theme.BACKGROUND, 0.4)
+            }} >
+                <AppTextBold >
+                    All markets
+                </AppTextBold>
+                <Switch
+                    value={ isEnabled }
+                    onValueChange={ onToggle }
+                    trackColor={{ false: theme.ACTIVE, true: theme.DEFAULT }}
+                    thumbColor={ isEnabled ? theme.ACTIVE : theme.DEFAULT }
+                />
+                <AppTextBold >
+                    Open markets
+                </AppTextBold>
+            </View>
             <MapView
                 provider={ PROVIDER_GOOGLE }
                 style={ styles.map }
@@ -52,6 +77,7 @@ const MapScreen: FC<Props> = (
                 }}
                 onLayout={ onLayout }
                 showsCompass={true}
+                customMapStyle={ themeName !== DEFAULT_THEME ? darkMapStyle : [] }
             >
                 { isMapReady && (
                     <>
@@ -59,17 +85,17 @@ const MapScreen: FC<Props> = (
                             key={ (longitude + latitude).toString() }
                             center={{ latitude, longitude }}
                             radius={ circleRadius }
-                            strokeColor = { theme.BORDER }
-                            fillColor = { hexToRgba(theme.BACKGROUND, 0.1) }
+                            strokeColor={ theme.BORDER }
+                            fillColor={ hexToRgba(theme.BACKGROUND, 0.1) }
                         />
                         <Marker coordinate={{ latitude, longitude }} >
                             <Icon name="map-marker" size={32} color={ theme.BACKGROUND } />
                         </Marker >
                         { !!markets.length && (
                             markets.map(market => {
-                                const { type, id, lat, lon, image, title } = market;
+                                const { type, id, lat, lon, image, title, isVisible } = market;
 
-                                return (
+                                return (!circleRadius || isVisible) && (
                                     <Marker
                                         coordinate={{ latitude: lat, longitude: lon }}
                                         key={ id }
@@ -94,181 +120,23 @@ const MapScreen: FC<Props> = (
                     </>
                 )}
             </MapView>
-            <Slider
-                minimumValue={0}
-                maximumValue={500000}
-                value={ circleRadius }
-                style={ styles.sliderButton }
-                thumbTintColor={ theme.BACKGROUND }
-                minimumTrackTintColor={ theme.BACKGROUND }
-                onValueChange={ onRadiusChange }
-            />
+            <View style={ styles.sliderWrapper } >
+                <Slider
+                    minimumValue={0}
+                    maximumValue={600000}
+                    thumbTintColor={ theme.BACKGROUND }
+                    minimumTrackTintColor={ theme.BACKGROUND }
+                    maximumTrackTintColor={ themeName === DEFAULT_THEME ? Colors.TRANSPARENT_BLACK : Colors.WHITE }
+                    onValueChange={ onRadiusChange }
+                />
+                <AppText style={{ color: theme.TEXT_3 }}>
+                    All
+                </AppText>
+            </View>
         </View>
 
     )
 };
-
-const customMapStyle = [
-    {
-        "elementType": "geometry",
-        "stylers": [
-            {
-                "color": "#242f3e"
-            }
-        ]
-    },
-    {
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#746855"
-            }
-        ]
-    },
-    {
-        "elementType": "labels.text.stroke",
-        "stylers": [
-            {
-                "color": "#242f3e"
-            }
-        ]
-    },
-    {
-        "featureType": "administrative.locality",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#d59563"
-            }
-        ]
-    },
-    {
-        "featureType": "poi",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#d59563"
-            }
-        ]
-    },
-    {
-        "featureType": "poi.park",
-        "elementType": "geometry",
-        "stylers": [
-            {
-                "color": "#263c3f"
-            }
-        ]
-    },
-    {
-        "featureType": "poi.park",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#6b9a76"
-            }
-        ]
-    },
-    {
-        "featureType": "road",
-        "elementType": "geometry",
-        "stylers": [
-            {
-                "color": "#38414e"
-            }
-        ]
-    },
-    {
-        "featureType": "road",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            {
-                "color": "#212a37"
-            }
-        ]
-    },
-    {
-        "featureType": "road",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#9ca5b3"
-            }
-        ]
-    },
-    {
-        "featureType": "road.highway",
-        "elementType": "geometry",
-        "stylers": [
-            {
-                "color": "#746855"
-            }
-        ]
-    },
-    {
-        "featureType": "road.highway",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            {
-                "color": "#1f2835"
-            }
-        ]
-    },
-    {
-        "featureType": "road.highway",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#f3d19c"
-            }
-        ]
-    },
-    {
-        "featureType": "transit",
-        "elementType": "geometry",
-        "stylers": [
-            {
-                "color": "#2f3948"
-            }
-        ]
-    },
-    {
-        "featureType": "transit.station",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#d59563"
-            }
-        ]
-    },
-    {
-        "featureType": "water",
-        "elementType": "geometry",
-        "stylers": [
-            {
-                "color": "#17263c"
-            }
-        ]
-    },
-    {
-        "featureType": "water",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            {
-                "color": "#515c6d"
-            }
-        ]
-    },
-    {
-        "featureType": "water",
-        "elementType": "labels.text.stroke",
-        "stylers": [
-            {
-                "color": "#17263c"
-            }
-        ]
-    }
-];
 
 const styles = StyleSheet.create({
     container: {
@@ -279,8 +147,17 @@ const styles = StyleSheet.create({
         flex: 1,
         position: "relative",
     },
-    map: {
-        ...StyleSheet.absoluteFillObject
+    map: StyleSheet.absoluteFillObject,
+    toggleWrapper: {
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        position: "absolute",
+        right: 0,
+        left: 0,
+        top: 0,
+        paddingVertical: 5,
+        zIndex: 1
     },
     modal: {
         paddingHorizontal: 10,
@@ -310,12 +187,12 @@ const styles = StyleSheet.create({
         borderBottomColor: "transparent",
         borderLeftColor: "transparent",
     },
-    sliderButton: {
+    sliderWrapper: {
         position: "absolute",
         right: -Dimensions.get("window").height / 4 + 20,
         bottom: Dimensions.get("window").height / 4,
         transform: [{ rotateZ : '-90deg' }],
         width: Dimensions.get("window").height / 2,
-    }
+    },
 });
 export default MapScreen;
