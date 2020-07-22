@@ -1,6 +1,6 @@
-import React, { FC } from "react";
+import React, { FC, Fragment } from "react";
 import { View, StyleSheet, Dimensions, Switch } from "react-native";
-import MapView, { PROVIDER_GOOGLE, Marker, Callout, Circle } from "react-native-maps";
+import MapView, { PROVIDER_GOOGLE, Marker, Callout, Circle, Polyline } from "react-native-maps";
 import Icon from "react-native-vector-icons/FontAwesome";
 import Slider from "@react-native-community/slider";
 import hexToRgba from "hex-to-rgba";
@@ -96,24 +96,33 @@ const MapScreen: FC<Props> = (
                                 const { type, id, lat, lon, title, isVisible } = market;
 
                                 return (!circleRadius || isVisible) && (
-                                    <Marker
-                                        coordinate={{ latitude: lat, longitude: lon }}
-                                        key={ id }
-                                        tracksViewChanges={false}
-                                    >
-                                        <Icon color={ theme.BACKGROUND } name={ MarkerIcons[type] } size={18}/>
-                                        <Callout tooltip={true} >
-                                            <View style={{ ...styles.modal, backgroundColor: theme.BACKGROUND }} >
-                                                <AppTextBold  >
-                                                    {`${ title } ${ id }`}
-                                                </AppTextBold>
-                                                <AppText>Type: { type } </AppText>
-                                            </View>
-                                            <View style={ styles.triangleWrapper } >
-                                                <View style={{ ...styles.triangle, borderTopColor: theme.BACKGROUND }} />
-                                            </View>
-                                        </Callout>
-                                    </Marker>
+                                    <Fragment key={ id } >
+                                        <Polyline
+                                            coordinates={[
+                                                { latitude, longitude },
+                                                { latitude: lat, longitude: lon }
+                                            ]}
+                                            strokeColor={ theme.BACKGROUND }
+                                            strokeWidth={0.3}
+                                        />
+                                        <Marker
+                                            coordinate={{ latitude: lat, longitude: lon }}
+                                            tracksViewChanges={false}
+                                        >
+                                            <Icon color={ theme.BACKGROUND } name={ MarkerIcons[type] } size={18}/>
+                                            <Callout tooltip={true} >
+                                                <View style={{ ...styles.modal, backgroundColor: theme.BACKGROUND }} >
+                                                    <AppTextBold  >
+                                                        {`${ title } ${ id }`}
+                                                    </AppTextBold>
+                                                    <AppText>Type: { type } </AppText>
+                                                </View>
+                                                <View style={ styles.triangleWrapper } >
+                                                    <View style={{ ...styles.triangle, borderTopColor: theme.BACKGROUND }} />
+                                                </View>
+                                            </Callout>
+                                        </Marker>
+                                    </Fragment>
                                 )
                             })
                         ) }

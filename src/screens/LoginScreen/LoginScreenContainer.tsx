@@ -1,35 +1,27 @@
 import React, { useState, useEffect } from "react";
-import { connect } from "react-redux";
-import { compose } from "redux";
+import { observer, inject } from "mobx-react";
+import { compose } from "recompose";
 import AsyncStorage from "@react-native-community/async-storage";
 
 import LoginScreen from "./LoginScreen";
 import { Auth } from "../../hoc";
-import { NavigationStackProps } from "../../interfaces/common";
+import { NavigationStackComponentProps, NavigationStackProps } from "../../interfaces/common";
 import { User } from "../../interfaces/user";
 import { initialFormData, LoginFormData, LoginFields } from "./InitialFormData";
-
-import { UserSelectors } from "../../store/selectors";
-import { AppStateType } from "../../store/reducers";
-import { userActions } from "../../store/actions/user.action";
 
 import { getInputValidation } from "../RegisterScreen/validation";
 import { RegisterData } from "../RegisterScreen/InitialFormData";
 import { setLoginDataToAsyncStorage } from "./rememberMe";
 import { StorageKeys } from "../../shared/constants";
 import { setAuthInAsyncStorage } from "../../shared/helpers";
+import { StoreType } from "../../store";
 
-type MapStateToProps = {
-    isAuth: boolean
+type Props = {
+    isAuth: boolean,
+    login: (data: User) => void
 };
 
-type MapDispatchToProps = {
-    signInUser: (data: User) => void
-};
-
-type Props = MapStateToProps & MapDispatchToProps;
-
-const LoginScreenContainer: NavigationStackProps<Props> = ({ screenProps, signInUser, isAuth }) => {
+const LoginScreenContainer: NavigationStackComponentProps<Props> = ({ screenProps, login, isAuth }) => {
     const [formData, setFormData] = useState(initialFormData)
     const [checked, setChecked] = useState(false);
 
@@ -72,7 +64,7 @@ const LoginScreenContainer: NavigationStackProps<Props> = ({ screenProps, signIn
             };
 
             setLoginDataToAsyncStorage(checked, data);
-            signInUser({
+            login({
                 ...data,
                 firstName: "First name",
                 secondName: "Second name"
@@ -120,10 +112,11 @@ const LoginScreenContainer: NavigationStackProps<Props> = ({ screenProps, signIn
     />
 };
 
-export default compose(
-    connect<MapStateToProps, MapDispatchToProps, {}, AppStateType>(
-        state => ({ isAuth: UserSelectors.getIsAuth(state) }),
-        { signInUser: userActions.signInUser }
-    ),
-    Auth
-)(LoginScreenContainer) as NavigationStackProps<{}>;
+export default compose<Props & NavigationStackProps, {}>(
+    inject<StoreType, {}, Props, {}>(({ rootStore }) => ({
+        isAuth: rootStore.userStore.isAuth,
+        login: rootStore.userStore.login
+    })),
+    Auth,
+    observer
+)(LoginScreenContainer);

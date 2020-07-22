@@ -1,5 +1,5 @@
-import React, { FC, memo } from "react";
-import { useSelector } from "react-redux";
+import React, { FC } from "react";
+import { observer, inject } from "mobx-react";
 import { View, StyleSheet, ImageBackground, TouchableOpacity } from "react-native";
 
 import { AppText, AppTextBold } from "../../atoms";
@@ -8,37 +8,39 @@ import { MarketType } from "../../../interfaces/market";
 import { TextSize } from "../../../assets/styles";
 import { getShortenedString } from "../../../shared/helpers";
 
-import { AppStateType } from "../../../store/reducers";
-import { AppSelectors } from "../../../store/selectors";
+import { StoreType } from "../../../store";
+import { ThemeType } from "../../../assets/styles/Theme";
 
-type Props = {
+type OwnProps = {
     market: MarketType,
     onOpen: (post: MarketType) => void
 };
 
-const Market: FC<Props> = memo(({ market, onOpen }) => {
-    const { theme } = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
+type StateProps = {
+    theme: ThemeType
+};
 
-    return (
-        <TouchableOpacity activeOpacity={0.7} onPress={ onOpen.bind(null, market) } >
-            <View style={{ ...styles.market, borderColor: theme.BORDER }} >
-                <ImageBackground source={{ uri: market.image }} style={{ ...styles.image }} >
-                    <View style={{ ...styles.textWrapper, backgroundColor: theme.OVERFLOW }} >
-                        <AppTextBold style={{ ...styles.title, color: theme.HEADERS }} >
-                            { `${ market.title  } ${ market.id }` }
-                        </AppTextBold>
-                    </View>
-                </ImageBackground>
-                <View style={ styles.marketDescription } >
-                    <AppText style={{ color: theme.TEXT_2 }} >
-                        <AppText style={{ color: theme.TEXT_2 }} >Type: </AppText>
-                        { getShortenedString(market.type) }
-                    </AppText>
+type Props = StateProps & OwnProps;
+
+const Market: FC<Props> =({ market, onOpen, theme }) => (
+    <TouchableOpacity activeOpacity={0.7} onPress={ onOpen.bind(null, market) } >
+        <View style={{ ...styles.market, borderColor: theme.BORDER }} >
+            <ImageBackground source={{ uri: market.image }} style={{ ...styles.image }} >
+                <View style={{ ...styles.textWrapper, backgroundColor: theme.OVERFLOW }} >
+                    <AppTextBold style={{ ...styles.title, color: theme.HEADERS }} >
+                        { `${ market.title  } ${ market.id }` }
+                    </AppTextBold>
                 </View>
+            </ImageBackground>
+            <View style={ styles.marketDescription } >
+                <AppText style={{ color: theme.TEXT_2 }} >
+                    <AppText style={{ color: theme.TEXT_2 }} >Type: </AppText>
+                    { getShortenedString(market.type) }
+                </AppText>
             </View>
-        </TouchableOpacity>
-    )
-});
+        </View>
+    </TouchableOpacity>
+);
 
 const styles = StyleSheet.create({
     market: {
@@ -64,4 +66,7 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Market;
+
+export default inject<StoreType, {}, StateProps, {}>(({ rootStore }) => ({
+    theme: rootStore.appStore.appTheme.theme
+}))(observer(Market) as unknown as FC<OwnProps>);

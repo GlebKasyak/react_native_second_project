@@ -1,29 +1,31 @@
-import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect, FC } from "react";
+import { inject, observer } from "mobx-react";
 
 import MapScreen from "./MapScreen";
 import { Container } from "../../components/atoms";
 
-import { NavigationStackProps } from "../../interfaces/common";
+import { NavigationStackComponentProps } from "../../interfaces/common";
 import { addDistanceToMarkets, getCurrentTime } from "../../shared/helpers";
 import defaultMarkets from "../../shared/markets";
 import { MarketType } from "../../interfaces/market";
 
-import { UserSelectors } from "../../store/selectors";
-import { AppStateType } from "../../store/reducers";
+import { GeolocationType } from "../../interfaces/user";
+import { StoreType } from "../../store";
 
-const MapScreenContainer: NavigationStackProps<{}> = ({ screenProps }) => {
-    const { latitude, longitude } = useSelector((state: AppStateType) => UserSelectors.getUserGeolocation(state));
+type Props = {
+    geolocation: GeolocationType
+};
 
+const MapScreenContainer: NavigationStackComponentProps<Props> = ({ screenProps, geolocation }) => {
     const [isMapReady, serIsMapReady] = useState(false);
     const [circleRadius, setCircleRadius] = useState(0);
     const [isEnabled, setIsEnabled] = useState(false);
     const [markets, setMarkets] = useState<Array<MarketType>>([]);
 
     useEffect(() => {
-        const data = addDistanceToMarkets(defaultMarkets, { latitude, longitude }) as Array<MarketType>;
+        const data = addDistanceToMarkets(defaultMarkets, geolocation) as Array<MarketType>;
         setMarkets(data)
-    },[latitude, longitude, defaultMarkets]);
+    },[addDistanceToMarkets, geolocation, defaultMarkets]);
 
     useEffect(() => {
         if(isEnabled) {
@@ -57,8 +59,8 @@ const MapScreenContainer: NavigationStackProps<{}> = ({ screenProps }) => {
     return (
         <Container style={{ flex: 1, padding: 0 }} >
             <MapScreen
-                latitude={ latitude }
-                longitude={ longitude }
+                latitude={ geolocation.latitude }
+                longitude={ geolocation.longitude }
                 isMapReady={ isMapReady }
                 onLayout={ () => serIsMapReady(true) }
                 circleRadius={ circleRadius }
@@ -73,4 +75,6 @@ const MapScreenContainer: NavigationStackProps<{}> = ({ screenProps }) => {
     )
 };
 
-export default MapScreenContainer;
+export default inject<StoreType, {}, Props, {}>(({ rootStore }) => ({
+    geolocation: rootStore.userStore.geolocation
+}))(observer(MapScreenContainer) as unknown as FC<{}>);

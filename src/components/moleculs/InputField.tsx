@@ -1,15 +1,15 @@
 import React, { FC } from "react";
-import { useSelector } from "react-redux";
+import { inject, observer } from "mobx-react";
 import { TextInput, View, StyleSheet } from "react-native";
 
 import { AppText, AppTextBold } from "../atoms";
 
-import { AppStateType } from "../../store/reducers";
-import { AppSelectors } from "../../store/selectors";
 import { TextSize, Colors } from "../../assets/styles";
 import { getShortenedString } from "../../shared/helpers";
+import { StoreType } from "../../store";
+import { ThemeType } from "../../assets/styles/Theme";
 
-type Props = {
+type OwnProps = {
     label: string,
     fieldName: string,
     value: string,
@@ -19,6 +19,12 @@ type Props = {
     secureTextEntry?: boolean
 };
 
+type StateProps = {
+    theme: ThemeType
+};
+
+type Props = StateProps & OwnProps;
+
 const InputField: FC<Props> = (
     {
         label,
@@ -27,34 +33,31 @@ const InputField: FC<Props> = (
         onChange,
         error,
         onEndEditing,
+        theme,
         ...props
-    }) => {
-    const { theme } = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
-
-    return (
-        <View style={ styles.wrapper } >
-            <AppText style={{ ...styles.label, color: theme.TEXT_2 }} >{ label }</AppText>
-            <TextInput
-                value={ value }
-                onChangeText={ text => onChange(text, fieldName) }
-                placeholder={ `Enter ${ label.toLocaleLowerCase() }` }
-                placeholderTextColor={ theme.BACKGROUND }
-                style={{
-                    ...styles.input,
-                    borderColor: theme.BACKGROUND,
-                    color: theme.BACKGROUND
-                }}
-                onEndEditing={ e => onEndEditing && onEndEditing(e.nativeEvent.text, fieldName) }
-                { ...props }
-            />
-            { !!error && (
-                <AppTextBold style={ styles.error } >
-                    { getShortenedString(error) }
-                </AppTextBold>
-            )}
-        </View>
-    )
-};
+    }) => (
+    <View style={ styles.wrapper } >
+        <AppText style={{ ...styles.label, color: theme.TEXT_2 }} >{ label }</AppText>
+        <TextInput
+            value={ value }
+            onChangeText={ text => onChange(text, fieldName) }
+            placeholder={ `Enter ${ label.toLocaleLowerCase() }` }
+            placeholderTextColor={ theme.BACKGROUND }
+            style={{
+                ...styles.input,
+                borderColor: theme.BACKGROUND,
+                color: theme.BACKGROUND
+            }}
+            onEndEditing={ e => onEndEditing && onEndEditing(e.nativeEvent.text, fieldName) }
+            { ...props }
+        />
+        { !!error && (
+            <AppTextBold style={ styles.error } >
+                { getShortenedString(error) }
+            </AppTextBold>
+        )}
+    </View>
+);
 
 const styles = StyleSheet.create({
     wrapper: {
@@ -76,4 +79,6 @@ const styles = StyleSheet.create({
     }
 });
 
-export default InputField;
+export default inject<StoreType, {}, StateProps, {}>(({ rootStore }) => ({
+    theme: rootStore.appStore.appTheme.theme
+}))(observer(InputField) as unknown as FC<OwnProps>);

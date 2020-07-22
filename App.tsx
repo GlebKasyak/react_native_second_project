@@ -1,34 +1,45 @@
-import React, { useEffect } from "react";
+import React, { useEffect, FC } from "react";
+import { Provider, observer, inject } from "mobx-react";
+import "mobx-react-lite/batchingForReactDom";
 import AsyncStorage from "@react-native-community/async-storage";
-import { Provider, useSelector, useDispatch } from "react-redux";
+
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "react-native";
 
 import { Container, AppLoader } from "./src/components/atoms";
+import { ErrorMessage } from "./src/components/moleculs";
 
 import SwitchNavigator from "./src/navigation/SwitchNavigator";
 import { StorageKeys } from "./src/shared/constants";
+import { GeolocationType } from "./src/interfaces/user";
 import { useGeolocation } from "./src/hooks";
-import { THEME_NAMES } from "./src/assets/styles/Theme";
 
-import store from "./src/store";
-import { AppStateType } from "./src/store/reducers";
-import { userActions } from "./src/store/actions/user.action";
-import { appActions } from "./src/store/actions/app.action";
-import { AppSelectors } from "./src/store/selectors";
-import {ErrorMessage} from "./src/components/moleculs";
+import { rootStore, StoreType } from "./src/store";
+import { AppThemeType } from "./src/store/app";
 
-const App = () => {
-    const dispatch = useDispatch();
-    const theme = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
-    const isLoading = useSelector((state: AppStateType) => AppSelectors.getLoading(state));
-    const [getGeolocation, errorMessage] = useGeolocation();
+type Props = {
+    theme: AppThemeType,
+    isLoading: boolean,
+    setAppThemeFromStorage: () => void,
+    setUserGeolocation: (data: GeolocationType) => void
+    setAuth: () => void
+};
+
+const App: FC<Props> = (
+    {
+        theme,
+        isLoading,
+        setAppThemeFromStorage,
+        setUserGeolocation,
+        setAuth
+    }) => {
+    const [getGeolocation, errorMessage] = useGeolocation(setUserGeolocation);
 
     useEffect(() => {
         const checkAuth = async () => {
             const authData = await AsyncStorage.getItem(StorageKeys.IS_AUTH);
-
             if(!!authData && JSON.parse(authData)) {
-                dispatch(userActions.setAuthRequest());
+                setAuth();
             }
         };
 
@@ -36,7 +47,7 @@ const App = () => {
     }, []);
 
     useEffect(() => {
-        dispatch(appActions.setAppThemeRequest());
+        setAppThemeFromStorage();
     }, [])
 
     if(isLoading) {
@@ -53,14 +64,24 @@ const App = () => {
         />
     };
 
-    return <SwitchNavigator screenProps={ theme }  />
+    return (
+        <SafeAreaProvider>
+            <SwitchNavigator screenProps={ theme }/>
+        </SafeAreaProvider>
+    )
 };
 
-const AppWithStore = () => (
-    <Provider store={ store } >
+const AppWithMobXStore = inject<StoreType, {}, Props, {}>(({ rootStore }) => ({
+    theme: rootStore.appStore.appTheme,
+    isLoading: rootStore.appStore.isLoading,
+    setAppThemeFromStorage: rootStore.appStore.setAppThemeFromStorage,
+    setUserGeolocation: rootStore.userStore.setUserGeolocation,
+    setAuth: rootStore.userStore.setAuth,
+}))(observer(App) as unknown as FC<{}>);
+
+export default () => (
+    <Provider rootStore={ rootStore } >
         <StatusBar barStyle="dark-content" />
-        <App />
+        <AppWithMobXStore />
     </Provider>
 );
-
-export default AppWithStore;

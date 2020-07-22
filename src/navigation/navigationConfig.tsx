@@ -19,7 +19,7 @@ export const setDefaultStackNavigationOptions = (title?: string) => ({
             borderBottomWidth: 2,
             borderBottomColor: screenProps.theme.LINE
         },
-        headerTintColor: screenProps.theme.HEADERS
+        headerTintColor: screenProps.theme.HEADERS,
     }),
 });
 

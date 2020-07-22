@@ -1,5 +1,5 @@
 import React, { FC, ComponentType } from "react";
-import { useSelector } from "react-redux";
+import { observer, inject } from "mobx-react";
 import {
     View,
     StyleSheet,
@@ -13,19 +13,24 @@ import {
 
 import AppTextBold from "./AppTextBold";
 
-import { AppStateType } from "../../store/reducers";
-import { AppSelectors } from "../../store/selectors";
+import { StoreType } from "../../store";
+import { ThemeType } from "../../assets/styles/Theme";
 
-type Props = {
+type OwnProps = {
     onPress: () => void,
-    style?: ViewStyle
+    style?: ViewStyle,
 };
+
+type StateProps = {
+    theme: ThemeType
+};
+
+type Props = StateProps & OwnProps;
 
 type WrapperType = ComponentType<TouchableNativeFeedbackProps | TouchableOpacityProps>;
 
-const AppButton: FC<Props> = ({ children, onPress, style }) => {
+const AppButton: FC<Props> = ({ children, onPress, style, theme  }) => {
     const Wrapper: WrapperType = Platform.OS === "android" ? TouchableNativeFeedback : TouchableOpacity;
-    const { theme } = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
 
     return (
         <Wrapper onPress={ onPress } activeOpacity={0.3} >
@@ -49,4 +54,6 @@ const styles = StyleSheet.create({
     },
 });
 
-export default AppButton;
+export default inject<StoreType, OwnProps, StateProps, {}>(({ rootStore }) => ({
+    theme: rootStore.appStore.appTheme.theme
+}))(observer(AppButton) as unknown as FC<OwnProps>);

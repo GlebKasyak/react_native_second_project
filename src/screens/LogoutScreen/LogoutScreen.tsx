@@ -1,7 +1,7 @@
 import React, { useState } from "react";
+import { observer, inject } from "mobx-react";
+import { compose } from "recompose";
 import AsyncStorage from "@react-native-community/async-storage";
-import { connect } from "react-redux";
-import { compose } from "redux";
 import { StyleSheet, Dimensions } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 
@@ -10,23 +10,21 @@ import { CustomAlert } from "../../components/moleculs";
 import { DoNotAuth } from "../../hoc";
 
 import { Classes } from "../../assets/styles";
-import { NavigationStackProps } from "../../interfaces/common";
+import { NavigationStackComponentProps, NavigationStackProps } from "../../interfaces/common";
 import { StorageKeys } from "../../shared/constants";
 import NavigationUrls from "../../navigation/navigationUrls";
+import { StoreType } from "../../store";
 
-import { userActions } from "../../store/actions/user.action";
-import { AppStateType } from "../../store/reducers";
-
-type MapDispatchToProps = {
-    logoutUser: () => void
+type Props = {
+    logout: () => void
 };
 
-const LogoutScreen: NavigationStackProps<MapDispatchToProps> = ({ logoutUser, navigation }) => {
+const LogoutScreen: NavigationStackComponentProps<Props> = ({ logout, navigation }) => {
     const [visibleAlert, setVisibleAlert] = useState(false);
 
     const onLogout = async () => {
         await AsyncStorage.removeItem(StorageKeys.IS_AUTH);
-        logoutUser();
+        logout();
         navigation.navigate(NavigationUrls.LOGIN);
     };
 
@@ -58,10 +56,10 @@ const styles = StyleSheet.create({
     }
 });
 
-export default compose(
-    connect<{}, MapDispatchToProps, {}, AppStateType>(
-        null,
-        { logoutUser: userActions.logoutUser }
-    ),
-    DoNotAuth
-)(LogoutScreen) as NavigationStackProps<{}>;
+export default compose<Props & NavigationStackProps, {}>(
+    inject<StoreType, {}, Props, {}>(({ rootStore }) => ({
+        logout: rootStore.userStore.logout
+    })),
+    DoNotAuth,
+    observer
+)(LogoutScreen);

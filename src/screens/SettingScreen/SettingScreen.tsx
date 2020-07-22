@@ -1,20 +1,22 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import React, { FC, useState } from "react";
+import { inject, observer } from "mobx-react";
 import AsyncStorage from "@react-native-community/async-storage";
 import { View, StyleSheet, Switch } from "react-native";
 
 import { Container, AppTextBold, AppText } from "../../components/atoms";
 
-import { appActions } from "../../store/actions/app.action";
-import { NavigationStackProps } from "../../interfaces/common";
+import { NavigationStackComponentProps } from "../../interfaces/common";
 import { TextSize } from "../../assets/styles";
 import { THEME_NAMES, DEFAULT_THEME } from "../../assets/styles/Theme";
 import { StorageKeys } from "../../shared/constants";
+import { StoreType } from "../../store";
 
 
-const SettingScreen: NavigationStackProps<{}> = ({ screenProps }) => {
-    const dispatch = useDispatch();
+type Props = {
+    setAppTheme: (themeName: THEME_NAMES) => void
+};
 
+const SettingScreen: NavigationStackComponentProps<Props> = ({ screenProps, setAppTheme }) => {
     const [isEnabled, setIsEnabled] = useState(screenProps.themeName !== DEFAULT_THEME);
     const color = screenProps.theme.TEXT_2;
 
@@ -23,7 +25,7 @@ const SettingScreen: NavigationStackProps<{}> = ({ screenProps }) => {
 
         const newTheme = isEnabled ? THEME_NAMES.BLUE : THEME_NAMES.BLACK;
         await AsyncStorage.setItem(StorageKeys.APP_THEME, newTheme);
-        dispatch(appActions.setAppThemeSuccess(newTheme));
+        setAppTheme(newTheme);
     };
 
     return (
@@ -61,4 +63,6 @@ const styles = StyleSheet.create({
     }
 })
 
-export default SettingScreen;
+export default inject<StoreType, {}, Props, {}>(({ rootStore }) => ({
+    setAppTheme: rootStore.appStore.setAppTheme
+}))(observer(SettingScreen) as unknown as FC);

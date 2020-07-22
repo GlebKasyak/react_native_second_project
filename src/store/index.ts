@@ -1,12 +1,23 @@
-import { createStore, applyMiddleware } from "redux";
-import createSagaMiddleware from "redux-saga";
-import { composeWithDevTools } from "redux-devtools-extension";
+import { AppStore, AppStoreType } from "./app";
+import { UserStore, UserStoreType } from "./user";
 
-import rootSagas from "./sagas";
-import rootReducer from "./reducers";
+class RootStore {
+    appStore: AppStoreType;
+    userStore: UserStoreType;
 
-const sagaMiddleware = createSagaMiddleware();
+    constructor() {
+        this.appStore = new AppStore();
+        this.userStore = new UserStore();
+    };
+};
 
-export default createStore(rootReducer, composeWithDevTools(applyMiddleware(sagaMiddleware)));
+export type RootStoreType = {
+    appStore: AppStoreType
+    userStore: UserStoreType
+};
 
-sagaMiddleware.run(rootSagas);
+export type StoreType = {
+    rootStore: RootStoreType
+};
+
+export const rootStore = new RootStore();

@@ -1,16 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
 import { PermissionsAndroid, Platform } from "react-native";
 import Geolocation from "react-native-geolocation-service";
 
-import { userActions } from "../store/actions/user.action";
+import { GeolocationType } from "../interfaces/user";
 
-type UseGeolocationType = () => [() => {}, string];
+type UseGeolocationType = (fn: (data: GeolocationType) => void) => [() => {}, string];
 
-const useGeolocation: UseGeolocationType = () => {
-    const dispatch = useDispatch();
+const useGeolocation: UseGeolocationType = setUserGeolocation => {
     const [errorMessage, setErrorMessage] = useState("");
-
     const getGeolocation = useCallback(  async () => {
         if(Platform.OS === "ios") {
             await Geolocation.requestAuthorization("whenInUse");
@@ -28,10 +25,10 @@ const useGeolocation: UseGeolocationType = () => {
 
             if (granted === PermissionsAndroid.RESULTS.GRANTED) {
                 await Geolocation.getCurrentPosition(({ coords }) => {
-                        dispatch(userActions.setUserGeolocation({
+                        setUserGeolocation({
                             latitude: coords.latitude,
                             longitude: coords.longitude
-                        }));
+                        });
                     },
                     error => setErrorMessage(error.message),
                     { enableHighAccuracy: false, timeout: 50000 });

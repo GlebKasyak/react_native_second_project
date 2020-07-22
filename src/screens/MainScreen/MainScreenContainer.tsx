@@ -1,22 +1,23 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState, useCallback, FC } from "react";
+import { observer, inject } from "mobx-react";
 
 import { Container, AppLoader } from "../../components/atoms";
 import MainScreen from "./MainScreen";
 
 import defaultMarkets from "../../shared/markets";
 import { MarketType } from "../../interfaces/market";
-import { NavigationStackProps } from "../../interfaces/common";
+import { GeolocationType } from "../../interfaces/user";
+import { NavigationStackComponentProps } from "../../interfaces/common";
 import { addDistanceToMarkets } from "../../shared/helpers";
 import NavigationUrls from "../../navigation/navigationUrls";
+import { StoreType } from "../../store";
 
-import { AppStateType } from "../../store/reducers";
-import { UserSelectors } from "../../store/selectors";
+type Props = {
+    geolocation: GeolocationType
+};
 
-
-const MainScreenContainer: NavigationStackProps<{}> = ({ navigation, screenProps }) => {
+const MainScreenContainer: NavigationStackComponentProps<Props> = ({ navigation, screenProps, geolocation }) => {
     const limit = 5;
-    const { latitude, longitude } = useSelector((state: AppStateType) => UserSelectors.getUserGeolocation(state));
 
     const [marketsState, setMarketsState] = useState<Array<MarketType>>([]);
     const [page, setPage] = useState(1);
@@ -28,7 +29,7 @@ const MainScreenContainer: NavigationStackProps<{}> = ({ navigation, screenProps
 
     const fetchData = useCallback(async (currentPage: number) => {
         const matchFilter = new RegExp(searchValue, "i");
-        const marketsWithDistance = addDistanceToMarkets(defaultMarkets, { latitude, longitude });
+        const marketsWithDistance = addDistanceToMarkets(defaultMarkets, geolocation);
 
         const marketList = isEnabled
             ? marketsWithDistance.sort(((a, b) => a.distance - b.distance))
@@ -113,5 +114,6 @@ const MainScreenContainer: NavigationStackProps<{}> = ({ navigation, screenProps
     )
 };
 
-
-export default MainScreenContainer;
+export default inject<StoreType, {}, Props, {}>(({ rootStore }) => ({
+    geolocation: rootStore.userStore.geolocation
+}))(observer(MainScreenContainer) as unknown as FC<{}>);

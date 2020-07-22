@@ -1,24 +1,26 @@
 import React, { FC } from "react";
-import { useSelector } from "react-redux";
+import { observer, inject } from "mobx-react";
 import { Text, StyleSheet, TextStyle } from "react-native";
 
 import Fonts from "../../assets/fonts";
-import { AppStateType } from "../../store/reducers";
-import { AppSelectors } from "../../store/selectors";
+import { ThemeType } from "../../assets/styles/Theme";
+import { StoreType } from "../../store";
 
-type Props = {
+type OwnProps = {
     style?: TextStyle
 };
 
-const AppText: FC<Props> = ({ children, style }) => {
-    const { theme } = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
+type StateProps = {
+    theme: ThemeType
+};
 
-    return  (
-        <Text style={{ ...styles.default, color: theme.TEXT, ...style }} >
-            { children }
-        </Text>
-    )
-}
+type Props = StateProps & OwnProps;
+
+const AppText: FC<Props> = ({ children, style, theme }) => (
+    <Text style={{ ...styles.default, color: theme.TEXT, ...style }} >
+        { children }
+    </Text>
+);
 
 const styles = StyleSheet.create({
     default: {
@@ -26,4 +28,6 @@ const styles = StyleSheet.create({
     }
 });
 
-export default AppText;
+export default inject<StoreType, {}, StateProps, {}>(({ rootStore }) => ({
+    theme: rootStore.appStore.appTheme.theme
+}))(observer(AppText) as unknown as FC<OwnProps>);

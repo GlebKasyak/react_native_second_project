@@ -1,15 +1,15 @@
 import React, { FC } from "react";
-import { useSelector } from "react-redux";
+import { inject, observer } from "mobx-react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 
 import { AppTextBold, AppText, AppButton } from "../atoms";
 
 import { TextSize, Colors } from "../../assets/styles";
-import { AppStateType } from "../../store/reducers";
-import { AppSelectors } from "../../store/selectors";
+import { StoreType } from "../../store";
+import { ThemeType } from "../../assets/styles/Theme";
 
-type Props = {
+type OwnProps = {
     title?: string,
     message: string,
     positiveButtonText?: string,
@@ -18,6 +18,12 @@ type Props = {
     onNegativeButtonPress?: () => void
 };
 
+type StateProps = {
+    theme: ThemeType
+};
+
+type Props = StateProps & OwnProps;
+
 const CustomAlert: FC<Props> = (
     {
         title,
@@ -25,52 +31,49 @@ const CustomAlert: FC<Props> = (
         positiveButtonText,
         onPositiveButtonPress,
         negativeButtonText,
-        onNegativeButtonPress
-    }) => {
-    const { theme } = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
-
-    return (
-        <View
-            style={{ ...styles.overflowWrapper, backgroundColor: theme.OVERFLOW }}
-        >
-            <View style={{
-                ...styles.mainContainer,
-                borderColor: theme.LINE,
-                backgroundColor: theme.BACKGROUND
-            }}>
-                <View style={ styles.topPart } >
-                    <Icon name="notifications" size={30} color={ theme.TEXT } />
-                    <AppTextBold style={ styles.alertTitle } >
-                        { title }
-                    </AppTextBold>
-                </View>
-                <ScrollView style={ styles.middlePart } >
-                    <AppText style={ styles.alertMessageTestStyle } >
-                        { message }
-                    </AppText>
-                </ScrollView>
-                <View style={ styles.bottomPart } >
-                    { !!negativeButtonText && !!onNegativeButtonPress &&
-                        <AppButton
-                            onPress={ onNegativeButtonPress }
-                            style={{ ...styles.alertMessageButtonStyle, backgroundColor: Colors.RED }}
-                        >
-                            { negativeButtonText }
-                        </AppButton>
-                    }
-                    { !!positiveButtonText && !!onPositiveButtonPress &&
-                        <AppButton
-                            onPress={ onPositiveButtonPress }
-                            style={{ ...styles.alertMessageButtonStyle, backgroundColor: theme.BACKGROUND_2 }}
-                        >
-                            { positiveButtonText }
-                        </AppButton>
-                    }
-                </View>
+        onNegativeButtonPress,
+        theme
+    }) => (
+    <View
+        style={{ ...styles.overflowWrapper, backgroundColor: theme.OVERFLOW }}
+    >
+        <View style={{
+            ...styles.mainContainer,
+            borderColor: theme.LINE,
+            backgroundColor: theme.BACKGROUND
+        }}>
+            <View style={ styles.topPart } >
+                <Icon name="notifications" size={30} color={ theme.TEXT } />
+                <AppTextBold style={ styles.alertTitle } >
+                    { title }
+                </AppTextBold>
+            </View>
+            <ScrollView style={ styles.middlePart } >
+                <AppText style={ styles.alertMessageTestStyle } >
+                    { message }
+                </AppText>
+            </ScrollView>
+            <View style={ styles.bottomPart } >
+                { !!negativeButtonText && !!onNegativeButtonPress &&
+                <AppButton
+                    onPress={ onNegativeButtonPress }
+                    style={{ ...styles.alertMessageButtonStyle, backgroundColor: Colors.RED }}
+                >
+                    { negativeButtonText }
+                </AppButton>
+                }
+                { !!positiveButtonText && !!onPositiveButtonPress &&
+                <AppButton
+                    onPress={ onPositiveButtonPress }
+                    style={{ ...styles.alertMessageButtonStyle, backgroundColor: theme.BACKGROUND_2 }}
+                >
+                    { positiveButtonText }
+                </AppButton>
+                }
             </View>
         </View>
-    )
-};
+    </View>
+);
 
 const styles = StyleSheet.create({
     overflowWrapper: {
@@ -130,4 +133,6 @@ const styles = StyleSheet.create({
     },
 });
 
-export default CustomAlert;
+export default inject<StoreType, {}, StateProps, {}>(({ rootStore }) => ({
+    theme: rootStore.appStore.appTheme.theme
+}))(observer(CustomAlert) as unknown as FC<OwnProps>);
