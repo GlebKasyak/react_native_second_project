@@ -1,21 +1,22 @@
 import React from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
-import { createStackNavigator, NavigationStackScreenProps } from "react-navigation-stack";
+import { createStackNavigator } from "react-navigation-stack";
 import Icon from "react-native-vector-icons/AntDesign";
 
 import { AppText } from "../../components/atoms";
 import { LoginScreen } from "../../screens";
 
 import { TextSize, Classes } from "../../assets/styles";
-import { DefaultNavigationOptionsType } from "../../interfaces/common";
+import { NavigationStackProps } from "../../interfaces/common";
+import NavigationUrls from "../navigationUrls";
 
 export default createStackNavigator({
     Login: LoginScreen,
 }, {
-    navigationOptions: ({ navigation, screenProps }: DefaultNavigationOptionsType<NavigationStackScreenProps>) => ({
+    navigationOptions: ({ navigation, screenProps }: NavigationStackProps) => ({
         headerRight: () => (
             <TouchableOpacity
-                onPress={ () => navigation.navigate("Register") }
+                onPress={ () => navigation.navigate(NavigationUrls.REGISTER) }
                 activeOpacity={0.6}
                 style={ styles.btnWrapper }
             >

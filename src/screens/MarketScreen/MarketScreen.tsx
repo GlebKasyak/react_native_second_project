@@ -1,18 +1,21 @@
 import React, { FC } from "react";
-import { useSelector } from "react-redux";
+import { observer, inject } from "mobx-react";
 import { View, Image, Text, StyleSheet } from "react-native";
 
 import { Container, AppText, AppTextBold } from "../../components/atoms";
 
-import { NavigationStackProps } from "../../interfaces/common";
+import { NavigationStackComponentProps } from "../../interfaces/common";
 import { Colors } from "../../assets/styles";
 import { MarketType } from "../../interfaces/market";
 
-import { AppSelectors } from "../../store/selectors";
-import { AppStateType } from "../../store/reducers";
+import { StoreType } from "../../store";
+import { ThemeType } from "../../assets/styles/Theme";
 
-const MarketScreen: NavigationStackProps<{}> = ({ navigation }) => {
-    const { theme } = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state))
+type Props = {
+    theme: ThemeType
+};
+
+const MarketScreen: NavigationStackComponentProps<Props> = ({ navigation, theme }) => {
     const market: MarketType = navigation.getParam("market");
 
     return (
@@ -42,14 +45,14 @@ const MarketScreen: NavigationStackProps<{}> = ({ navigation }) => {
     )
 };
 
-type Props = {
+type DescriptionProps = {
     paragraph: string,
     text: string,
     paragraphColor: Colors,
     textColor: Colors
 };
 
-const Description: FC<Props> = ({ paragraph, text, paragraphColor, textColor }) => (
+const Description: FC<DescriptionProps> = ({ paragraph, text, paragraphColor, textColor }) => (
     <View style={ styles.textWrapper } >
         <AppTextBold style={{ color: paragraphColor }} >
             { paragraph }: <Text />
@@ -80,4 +83,6 @@ const styles = StyleSheet.create({
     }
 });
 
-export default MarketScreen;
+export default inject<StoreType, {}, Props, {}>(({ rootStore }) => ({
+    theme: rootStore.appStore.appTheme.theme
+}))(observer(MarketScreen) as unknown as FC<{}>);

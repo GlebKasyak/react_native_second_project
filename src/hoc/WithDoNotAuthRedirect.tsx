@@ -1,34 +1,37 @@
 import React, { FC, useEffect } from "react";
+import { inject, observer } from "mobx-react";
 import AsyncStorage from "@react-native-community/async-storage";
-import { useSelector } from "react-redux";
 import { NavigationStackScreenProps } from "react-navigation-stack";
 
-import { AppStateType } from "../store/reducers";
-import { UserSelectors } from "../store/selectors";
 import NavigationUrls from "../navigation/navigationUrls";
 import { StorageKeys } from "../shared/constants";
+import { StoreType } from "../store";
 
 const WithDoNotAuthRedirect = <P extends NavigationStackScreenProps>(Component: FC<P>) => {
-    const RedirectComponent: FC<P> = props => {
-        const isAuthFromStore = useSelector((state: AppStateType) => UserSelectors.getIsAuth(state));
+    type StoreProps = {
+        isAuth: boolean
+    };
 
+    const RedirectComponent: FC<P & StoreProps> = props => {
         useEffect(() => {
             const checkAuth = async () => {
-                const isAuth = await AsyncStorage.getItem(StorageKeys.IS_AUTH);
+                const isAuthData = await AsyncStorage.getItem(StorageKeys.IS_AUTH);
 
-                if(!isAuth || !JSON.parse(isAuth)) {
+                if(!isAuthData || !JSON.parse(isAuthData)) {
                     props.navigation.navigate(NavigationUrls.AUTH);
                 }
             };
 
             checkAuth();
-        }, [props.navigation, isAuthFromStore]);
+        }, [props.navigation, props.isAuth]);
 
         return <Component { ...props } />
     };
 
     RedirectComponent.displayName = "WithDoNotAuthRedirect";
-    return RedirectComponent;
+    return inject<StoreType, {}, StoreProps, {}>(({ rootStore }) => ({
+        isAuth: rootStore.userStore.isAuth
+    }))(observer(RedirectComponent) as unknown as FC<P>);
 };
 
 export default WithDoNotAuthRedirect;

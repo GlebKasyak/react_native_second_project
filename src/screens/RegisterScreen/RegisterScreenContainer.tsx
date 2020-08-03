@@ -1,25 +1,25 @@
 import React, { useState } from "react";
-import { connect } from "react-redux";
-import { compose } from "redux";
+import { observer, inject } from "mobx-react";
+import { compose } from "recompose";
+import AsyncStorage from "@react-native-community/async-storage";
 
 import RegisterScreen from "./RegisterScreen";
 import { Auth } from "../../hoc";
 
-import { NavigationStackProps } from "../../interfaces/common";
+import { NavigationStackComponentProps, NavigationStackProps } from "../../interfaces/common";
 import { User } from "../../interfaces/user";
-import { setAuthInAsyncStorage } from "../../shared/helpers";
 
 import { initialFormData, initialConfirmPasswordData, RegisterData } from "./InitialFormData";
 import { RegisterNames, getInputValidation, getConfirmInputValidation } from "./validation";
+import NavigationUrls from "../../navigation/navigationUrls";
 
-import { userActions } from "../../store/actions/user.action";
-import { AppStateType } from "../../store/reducers";
+import { StoreType } from "../../store";
 
-type MapDispatchToProps = {
-    signUpUser: (data: User) => void
+type Props = {
+    register: (data: User) => Promise<void>
 };
 
-const RegisterScreenContainer: NavigationStackProps<MapDispatchToProps> = ({ signUpUser }) => {
+const RegisterScreenContainer: NavigationStackComponentProps<Props> = ({ navigation, register }) => {
     const [formData, setFormData] = useState(initialFormData);
     const [confirmPassword, setConfirmPassword] = useState(initialConfirmPasswordData);
 
@@ -51,7 +51,7 @@ const RegisterScreenContainer: NavigationStackProps<MapDispatchToProps> = ({ sig
         ));
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         let updatedInputs = {} as RegisterData;
 
         for(const key in formData) {
@@ -71,13 +71,15 @@ const RegisterScreenContainer: NavigationStackProps<MapDispatchToProps> = ({ sig
         if(Object.values(updatedInputs).every(value => !value.error) && !confirmPassword.error) {
             let data = {} as User;
 
-            for(const key in data) {
+            for(const key in formData) {
                 data[formData[key as RegisterNames].name] = formData[key as RegisterNames].value
             };
 
-            signUpUser(data);
+            register(data);
             setFormData(initialFormData);
-            setAuthInAsyncStorage();
+            setConfirmPassword(initialConfirmPasswordData);
+            navigation.navigate(NavigationUrls.LOADER, { screen: NavigationUrls.APP  });
+            await AsyncStorage.clear();
         }
     };
 
@@ -92,9 +94,11 @@ const RegisterScreenContainer: NavigationStackProps<MapDispatchToProps> = ({ sig
     />
 };
 
-export default compose(
-    connect<{}, MapDispatchToProps, {}, AppStateType>(
-    null,
-    { signUpUser: userActions.signUpUser }),
-    Auth
-)(RegisterScreenContainer) as NavigationStackProps<{}>
+export default compose<Props & NavigationStackProps, {}>(
+    inject<StoreType, {}, Props, {}>(({ rootStore }) => ({
+        register: rootStore.userStore.register
+    })),
+    Auth,
+    observer
+)(RegisterScreenContainer);
+

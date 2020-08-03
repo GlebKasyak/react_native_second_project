@@ -1,77 +1,101 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { PermissionsAndroid, Platform } from "react-native";
-import Geolocation from "react-native-geolocation-service";
+import React, { useState, useEffect, FC } from "react";
+import { inject, observer } from "mobx-react";
 
 import MapScreen from "./MapScreen";
-import { ErrorMessage } from "../../components/moleculs";
-import { AppLoader, Container } from "../../components/atoms";
+import { Container } from "../../components/atoms";
 
-const MapScreenContainer = () => {
-    const [location, setLocation] = useState({ latitude: 0, longitude: 0 });
+import { NavigationStackComponentProps } from "../../interfaces/common";
+import { getCurrentTime } from "../../shared/helpers";
+import { MarketType } from "../../interfaces/market";
 
-    const [isLoading, setIsLoading] = useState(true);
-    const [isMapReady, serIsMapReady] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
+import { GeolocationType } from "../../interfaces/user";
+import { MarketAPI } from "../../apiServices";
+import { StoreType } from "../../store";
 
-    const getGeolocation = useCallback(  async () => {
-        if(Platform.OS === "ios") {
-            await Geolocation.requestAuthorization("whenInUse");
-        };
-
-        try {
-            const granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,{
-                    title: 'Location Access Required',
-                    message: 'This App needs to Access your location',
-                    buttonNegative: "Cancel",
-                    buttonPositive: "OK"
-                }
-            );
-
-            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-                await Geolocation.getCurrentPosition(({ coords }) => {
-                        setLocation({
-                            latitude: coords.latitude,
-                            longitude: coords.longitude
-                        });
-                    },
-                    error => setErrorMessage(error.message),
-                    { enableHighAccuracy: false, timeout: 50000 });
-            } else {
-                setErrorMessage("Permission Denied");
-            }
-        } catch (err) {
-            setErrorMessage(err)
-        }
-
-        setIsLoading(false);
-    }, []);
-
-    useEffect(() => {
-        let isCanceled = false;
-        getGeolocation();
-
-        return () => {
-            isCanceled = true;
-        }
-    }, [getGeolocation]);
-
-    let component;
-
-    if(isLoading) {
-        component = <AppLoader />
-    } else if(!!errorMessage) {
-        component = <ErrorMessage message={ errorMessage } onFetch={ getGeolocation } />
-    } else {
-        component = <MapScreen
-            latitude={ location.latitude }
-            longitude={ location.longitude }
-            isMapReady={ isMapReady }
-            onLayout={ () => serIsMapReady(true) }
-        />
-    };
-
-    return <Container style={{ flex: 1, padding: 0 }} >{ component }</Container>
+type Props = {
+    geolocation: GeolocationType
 };
 
-export default MapScreenContainer;
+const MapScreenContainer: NavigationStackComponentProps<Props> = ({ screenProps, geolocation }) => {
+    const [state, setState] = useState({
+        isMapReady: false,
+        circleRadius: 0,
+        isEnabled: false,
+        markets: [] as Array<MarketType>
+    });
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const { data: { getAllMarkets } } = await MarketAPI.getAllMarkets(geolocation);
+            setState(prevState => ({ ...prevState, markets: getAllMarkets }));
+        };
+
+        fetchData();
+    },[geolocation]);
+
+    useEffect(() => {
+        if(state.isEnabled) {
+            setState(prevState => ({
+                ...prevState,
+                markets: state.markets.filter(market => {
+                    if(market.openingTime < getCurrentTime() && getCurrentTime() < market.closingTime) {
+                        return market
+                    }
+                })
+            }));
+        }
+    }, [state.isEnabled]);
+
+    useEffect(() => {
+        if(state.circleRadius) {
+            const data = state.markets.map(market => {
+                if(state.circleRadius >= market.distance) {
+                    return {
+                        ...market,
+                        isVisible: true
+                    }
+                } else {
+                   return {
+                       ...market,
+                       isVisible: false
+                   }
+                }
+            });
+            setState(prevState => ({ ...prevState, markets: data }))
+        }
+    }, [state.circleRadius]);
+
+    const layoutHandler = () => {
+        setState(prevState => ({ ...prevState, isMapReady: true }))
+    };
+
+    const toggleHandler = (isEnabled: boolean) => {
+        setState(prevState => ({ ...prevState, isEnabled }));
+    };
+
+    const radiusChangeHandler = (value: number) => {
+      setState(prevState => ({ ...prevState, circleRadius: value }))
+    };
+
+    return (
+        <Container style={{ flex: 1, padding: 0 }} >
+            <MapScreen
+                latitude={ geolocation.latitude }
+                longitude={ geolocation.longitude }
+                isMapReady={ state.isMapReady }
+                onLayout={ layoutHandler }
+                circleRadius={ state.circleRadius }
+                onRadiusChange={ radiusChangeHandler }
+                markets={ state.markets }
+                isEnabled={ state.isEnabled }
+                onToggle={ toggleHandler }
+                theme={ screenProps.theme }
+                themeName={ screenProps.themeName }
+            />
+        </Container>
+    )
+};
+
+export default inject<StoreType, {}, Props, {}>(({ rootStore }) => ({
+    geolocation: rootStore.userStore.geolocation
+}))(observer(MapScreenContainer) as unknown as FC<{}>);

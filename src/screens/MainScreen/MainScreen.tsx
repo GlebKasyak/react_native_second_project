@@ -1,119 +1,106 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { useSelector } from "react-redux";
-import { StyleSheet, TextInput, View } from "react-native";
+import React, { FC } from "react";
+import { StyleSheet, TextInput, View, Switch } from "react-native";
 
-import { Container, AppLoader, AppTextBold, AppButton } from "../../components/atoms";
+import { AppTextBold, AppButton, AppText } from "../../components/atoms";
 import { MarketList } from "../../components/moleculs";
-import { NavigationStackProps } from "../../interfaces/common";
-import { TextSize, Classes } from "../../assets/styles";
 
-import markets from "../../shared/markets";
 import { MarketType } from "../../interfaces/market";
-import NavigationUrls from "../../navigation/navigationUrls";
+import { TextSize, Classes } from "../../assets/styles";
+import { ThemeType } from "../../assets/styles/Theme";
 
-import { AppStateType } from "../../store/reducers";
-import { AppSelectors } from "../../store/selectors";
 
-const MainScreen: NavigationStackProps<{}> = ({ navigation }) => {
-    const limit = 5;
-    const { theme } = useSelector((state: AppStateType) => AppSelectors.getAppTheme(state));
+type Props = {
+    searchValue: string,
+    isEnabled: boolean,
+    isLoading: boolean,
+    isFetching: boolean,
+    markets: Array<MarketType>,
+    theme: ThemeType,
+    onSearch: (value: string) => void,
+    onPress: () => void,
+    onToggle: (data: boolean) => void,
+    onNextPage: () => void,
+    onOpenMarket: (market: MarketType) => void
+};
 
-    const [marketsState, setMarketsState] = useState<Array<MarketType>>([]);
-    const [page, setPage] = useState(1);
-    const [isFetching, setIsFetching] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+const MainScreen: FC<Props> = (
+    {
+        searchValue,
+        isEnabled,
+        isLoading,
+        isFetching,
+        markets,
+        theme,
+        onSearch,
+        onPress,
+        onToggle,
+        onNextPage,
+        onOpenMarket,
+    }) => {
 
-    const [searchValue, setSearchValue] = useState("");
-
-    const fetchData = useCallback(async (currentPage: number) => {
-        const matchFilter = new RegExp(searchValue, "i");
-        const filteredData = markets.filter(({ title }) => !searchValue || matchFilter.test(title));
-
-        if((filteredData.length / limit) > (currentPage - 1)) {
-            setIsFetching(true);
-
-            const data = await new Promise(resolve => {
-                setTimeout(() => {
-                    resolve(filteredData.slice((currentPage - 1) * limit, limit * currentPage))
-                }, 1500);
-            }) as Array<MarketType>;
-
-            setMarketsState(prevMarkets => [...prevMarkets, ...data]);
-            setIsFetching(false);
-        }
-
-        isLoading && setIsLoading(false);
-    },  [limit, isLoading])
-
-    useEffect(() => {
-        let isCancelled = false;
-
-        if(!isCancelled && ((marketsState.length / limit) !== page)) {
-            fetchData(page);
-        }
-
-        return () => {
-            isCancelled = true;
-        }
-    }, [fetchData, marketsState.length, page])
-
-    const nextPageHandler = () => {
-        if((marketsState.length / limit) === page && !isFetching) {
-            setPage(prevPage => prevPage + 1);
-        }
-    };
-
-    const openMarketHandler = (market: MarketType) => {
-        navigation.navigate(NavigationUrls.MARKET, { market });
-    };
-
-    const handlePress = () => {
-        setIsLoading(true);
-        setPage(1);
-        setMarketsState([]);
-    };
+    const { TEXT_2, DEFAULT, ACTIVE } = theme;
 
     return (
-        <Container typeOfContainer="view" >
-            { isLoading
-                ? <AppLoader />
-                : (
-                    <>
-                        <View style={ styles.searchWrapper } >
-                            <TextInput
-                                value={ searchValue }
-                                onChangeText={ setSearchValue }
-                                style={{...styles.input, borderColor: theme.BORDER, color: theme.TEXT_2 }}
-                            />
-                            <AppButton onPress={ handlePress } style={ styles.button } >
-                                Filter
-                            </AppButton>
-                        </View>
-                        { !isLoading && !marketsState.length
-                            ? (
-                                <View style={ styles.alertContainer } >
-                                    <AppTextBold style={ styles.alert } >
-                                        Market list is empty
-                                    </AppTextBold>
-                                </View>)
-                            : (
-                                <MarketList
-                                    data={ marketsState }
-                                    isLoading={ isFetching }
-                                    nextPage={ nextPageHandler }
-                                    onOpen={ openMarketHandler }
-                                />
-                            )
+        <>
+            <View style={ styles.controllers } >
+                <View style={ styles.searchWrapper } >
+                    <TextInput
+                        value={ searchValue }
+                        onChangeText={ onSearch }
+                        style={{ ...styles.input, borderColor: theme.BORDER, color: TEXT_2 }}
+                    />
+                    <AppButton onPress={ onPress } style={ styles.button } >
+                        Filter
+                    </AppButton>
+                </View>
+                <View style={ styles.toggleWrapper } >
+                    <AppText style={{ color: TEXT_2 }} >Sorting by distance:</AppText>
+                    <Switch
+                        value={ isEnabled }
+                        onValueChange={ onToggle }
+                        trackColor={{ false: DEFAULT, true: DEFAULT }}
+                        thumbColor={ isEnabled ? ACTIVE : DEFAULT }
+                        style={ styles.toggle }
+                    />
+                </View>
+            </View >
+            <View style={ styles.content } >
+                { !isLoading && !markets.length
+                    ? (
+                        <View style={ styles.alertContainer } >
+                            <AppTextBold style={{ ...styles.alert, color: TEXT_2 }} >
+                                Market list is empty
+                            </AppTextBold>
+                        </View>)
+                    : (
+                        <MarketList
+                            data={ markets }
+                            isLoading={ isFetching }
+                            nextPage={ onNextPage }
+                            onOpen={ onOpenMarket }
+                        />
+                    )
 
-                        }
-                    </>
-                )
-            }
-        </Container>
+                }
+            </View>
+        </>
     )
 };
 
 const styles = StyleSheet.create({
+    content: {
+        marginTop: 85,
+        flex: 1
+    },
+    controllers: {
+        position: "absolute",
+        zIndex: 1,
+        top: 0,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 10,
+        paddingVertical: 8
+    },
     alertContainer: Classes.CENTER,
     alert: {
         fontSize: TextSize.EXTRA_LARGE_TEXT
@@ -128,6 +115,15 @@ const styles = StyleSheet.create({
     },
     button: {
         paddingHorizontal: 9
+    },
+    toggleWrapper: {
+        marginTop: 15,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center"
+    },
+    toggle: {
+        transform: [{ scale: 1.25 }],
     }
 })
 
