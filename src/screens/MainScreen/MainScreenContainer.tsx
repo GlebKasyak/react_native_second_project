@@ -4,72 +4,71 @@ import { observer, inject } from "mobx-react";
 import { Container, AppLoader } from "../../components/atoms";
 import MainScreen from "./MainScreen";
 
-import defaultMarkets from "../../shared/markets";
 import { MarketType } from "../../interfaces/market";
 import { GeolocationType } from "../../interfaces/user";
 import { NavigationStackComponentProps } from "../../interfaces/common";
-import { addDistanceToMarkets } from "../../shared/helpers";
 import NavigationUrls from "../../navigation/navigationUrls";
+import { MarketAPI } from "../../apiServices";
 import { StoreType } from "../../store";
 
 type Props = {
-    geolocation: GeolocationType
+    geolocation: GeolocationType,
 };
 
 const MainScreenContainer: NavigationStackComponentProps<Props> = ({ navigation, screenProps, geolocation }) => {
     const limit = 5;
 
-    const [marketsState, setMarketsState] = useState<Array<MarketType>>([]);
-    const [page, setPage] = useState(1);
-    const [isFetching, setIsFetching] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    const [state, setState] = useState({
+        markets: [] as Array<MarketType>,
+        page: 1,
+        isFetching: false,
+        isLoading: true,
+        isEnabled: false,
+        value: "",
+        searchValue: ""
+    });
 
-    const [isEnabled, setIsEnabled] = useState(false);
-    const [searchValue, setSearchValue] = useState("");
+    const fetchData = useCallback(async (currentPage: number, limit: number, value?: string) => {
+        try {
+          if(geolocation.latitude) {
+              const { data: { getMarkets } } = await MarketAPI.getMarkets({
+                  page: currentPage,
+                  limit,
+                  value,
+                  geolocation,
+                  sortByDistance: state.isEnabled
+              });
 
-    const fetchData = useCallback(async (currentPage: number) => {
-        const matchFilter = new RegExp(searchValue, "i");
-        const marketsWithDistance = addDistanceToMarkets(defaultMarkets, geolocation);
-
-        const marketList = isEnabled
-            ? marketsWithDistance.sort(((a, b) => a.distance - b.distance))
-            : marketsWithDistance;
-
-        const filteredData = searchValue
-            ? marketList.filter(({ title }) => matchFilter.test(title))
-            : marketList;
-
-        if((filteredData.length / limit) > (currentPage - 1)) {
-            setIsFetching(true);
-
-            const data = await new Promise(resolve => {
-                setTimeout(() => {
-                    resolve(filteredData.slice((currentPage - 1) * limit, limit * currentPage))
-                }, 1500);
-            }) as Array<MarketType>;
-
-            setMarketsState(prevMarkets => [...prevMarkets, ...data]);
-            setIsFetching(false);
-        };
-
-        isLoading && setIsLoading(false);
-    },  [limit, isLoading, isEnabled, addDistanceToMarkets])
+              setState(prevState => ({
+                  ...prevState,
+                  markets: [...prevState.markets, ...getMarkets],
+                  isLoading: false,
+                  isFetching: false
+              }));
+          }
+        } catch (err) {
+            console.log(err)
+        }
+    },  [geolocation, state.isEnabled])
 
     useEffect(() => {
         let isCancelled = false;
 
-        if(!isCancelled && ((marketsState.length / limit) !== page)) {
-            fetchData(page);
-        };
+        if(!isCancelled) {
+            fetchData(state.page, limit, state.searchValue);
+        }
 
         return () => {
             isCancelled = true;
         };
-    }, [fetchData, marketsState.length, page]);
+    }, [fetchData, state.page, state.searchValue]);
 
     const nextPageHandler = () => {
-        if((marketsState.length / limit) === page && !isFetching) {
-            setPage(prevPage => prevPage + 1);
+        if((state.markets.length / limit) === state.page && !state.isFetching) {
+            setState(prevState => ({
+                ...prevState,
+                isFetching: true, page: prevState.page + 1
+            }));
         }
     };
 
@@ -78,31 +77,38 @@ const MainScreenContainer: NavigationStackComponentProps<Props> = ({ navigation,
     };
 
     const handlePress = () => {
-        setIsLoading(true);
-        setPage(1);
-        setMarketsState([]);
+        setState({
+            ...state,
+            isLoading: true,
+            page: 1,
+            markets: [],
+            searchValue: state.value
+        });
     };
 
-    const handleToggle = () => {
-        setIsEnabled(prevValue => !prevValue)
-        setIsLoading(true);
-        setPage(1);
-        setMarketsState([]);
+    const handleToggle = (isEnabled: boolean) => {
+        setState({
+            ...state,
+            isEnabled,
+            isLoading: true,
+            page: 1,
+            markets: []
+        });
     };
 
     return (
         <Container typeOfContainer="view" >
-            { isLoading
+            { state.isLoading
                 ? <AppLoader/>
                 : (
                     <MainScreen
-                        searchValue={ searchValue }
-                        isEnabled={ isEnabled }
-                        isLoading={ isLoading }
-                        isFetching={ isFetching }
-                        markets={ marketsState }
+                        searchValue={ state.value }
+                        isEnabled={ state.isEnabled }
+                        isLoading={ state.isLoading }
+                        isFetching={ state.isFetching }
+                        markets={ state.markets }
                         theme={ screenProps.theme }
-                        onSearch={ (value: string) => setSearchValue(value) }
+                        onSearch={ (value: string) => setState({ ...state, value }) }
                         onPress={ handlePress }
                         onToggle={ handleToggle }
                         onNextPage={ nextPageHandler }
@@ -116,4 +122,4 @@ const MainScreenContainer: NavigationStackComponentProps<Props> = ({ navigation,
 
 export default inject<StoreType, {}, Props, {}>(({ rootStore }) => ({
     geolocation: rootStore.userStore.geolocation
-}))(observer(MainScreenContainer) as unknown as FC<{}>);
+}))(observer(MainScreenContainer) as unknown as FC);

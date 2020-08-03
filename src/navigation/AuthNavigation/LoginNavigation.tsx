@@ -8,6 +8,7 @@ import { LoginScreen } from "../../screens";
 
 import { TextSize, Classes } from "../../assets/styles";
 import { NavigationStackProps } from "../../interfaces/common";
+import NavigationUrls from "../navigationUrls";
 
 export default createStackNavigator({
     Login: LoginScreen,
@@ -15,7 +16,7 @@ export default createStackNavigator({
     navigationOptions: ({ navigation, screenProps }: NavigationStackProps) => ({
         headerRight: () => (
             <TouchableOpacity
-                onPress={ () => navigation.navigate("Register") }
+                onPress={ () => navigation.navigate(NavigationUrls.REGISTER) }
                 activeOpacity={0.6}
                 style={ styles.btnWrapper }
             >

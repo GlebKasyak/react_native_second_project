@@ -6,22 +6,23 @@ import AsyncStorage from "@react-native-community/async-storage";
 import LoginScreen from "./LoginScreen";
 import { Auth } from "../../hoc";
 import { NavigationStackComponentProps, NavigationStackProps } from "../../interfaces/common";
-import { User } from "../../interfaces/user";
+import { LoginType } from "../../interfaces/user";
 import { initialFormData, LoginFormData, LoginFields } from "./InitialFormData";
 
 import { getInputValidation } from "../RegisterScreen/validation";
 import { RegisterData } from "../RegisterScreen/InitialFormData";
 import { setLoginDataToAsyncStorage } from "./rememberMe";
 import { StorageKeys } from "../../shared/constants";
-import { setAuthInAsyncStorage } from "../../shared/helpers";
+import NavigationUrls from "../../navigation/navigationUrls";
 import { StoreType } from "../../store";
 
 type Props = {
     isAuth: boolean,
-    login: (data: User) => void
+    login: (data: LoginType) => Promise<void>,
+    setLoading: (isLoading: boolean) => void
 };
 
-const LoginScreenContainer: NavigationStackComponentProps<Props> = ({ screenProps, login, isAuth }) => {
+const LoginScreenContainer: NavigationStackComponentProps<Props> = ({ navigation, screenProps, login, isAuth, setLoading }) => {
     const [formData, setFormData] = useState(initialFormData)
     const [checked, setChecked] = useState(false);
 
@@ -64,12 +65,10 @@ const LoginScreenContainer: NavigationStackComponentProps<Props> = ({ screenProp
             };
 
             setLoginDataToAsyncStorage(checked, data);
-            login({
-                ...data,
-                firstName: "First name",
-                secondName: "Second name"
-            });
+            login(data);
+            navigation.navigate(NavigationUrls.LOADER, { screen: NavigationUrls.APP  });
             !checked && setFormData(initialFormData);
+
         }
     };
 
@@ -96,10 +95,6 @@ const LoginScreenContainer: NavigationStackComponentProps<Props> = ({ screenProp
         setFormDataFromAsyncStorage();
     }, []);
 
-    useEffect(() => {
-        isAuth && setAuthInAsyncStorage();
-    }, [isAuth])
-
     return <LoginScreen
         formData={ formData }
         checked={ checked }
@@ -115,7 +110,8 @@ const LoginScreenContainer: NavigationStackComponentProps<Props> = ({ screenProp
 export default compose<Props & NavigationStackProps, {}>(
     inject<StoreType, {}, Props, {}>(({ rootStore }) => ({
         isAuth: rootStore.userStore.isAuth,
-        login: rootStore.userStore.login
+        login: rootStore.userStore.login,
+        setLoading: rootStore.appStore.setLoading
     })),
     Auth,
     observer

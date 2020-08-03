@@ -49,7 +49,7 @@ export const serTabsNavigationOptions = (title: string, iconName: string) => ({
                 backgroundColor: screenProps.theme.MAIN,
                 borderTopWidth: 2,
                 borderTopColor: screenProps.theme.LINE
-            }
+            },
         }
     })
 })

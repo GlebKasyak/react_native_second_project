@@ -1,12 +1,15 @@
 import { observable, decorate, action } from "mobx";
 
-import { User, GeolocationType } from "../../interfaces/user";
+import { UserAPI } from "../../apiServices";
+import { User, GeolocationType, LoginType } from "../../interfaces/user";
+import { setTokenToStorage, setAuthInAsyncStorage } from "../../shared/helpers";
+import { RootStoreType } from "../index";
 
 const initialUserState =  {
-    firstName: "Gleb",
-    secondName: "Kasyak",
-    email: "sonyck94@gmail.com",
-    password: "12345",
+    _id: "",
+    firstName: "",
+    secondName: "",
+    email: ""
 };
 
 const initialGeolocationState = {
@@ -15,13 +18,53 @@ const initialGeolocationState = {
 };
 
 export class UserStore {
+    rootStore: RootStoreType;
     user = initialUserState;
     geolocation = initialGeolocationState;
     isAuth = false;
 
-    login = (data: User) => {
-        this.user = data;
-        this.isAuth = true;
+    constructor(rootStore: RootStoreType) {
+        this.rootStore = rootStore;
+    };
+
+    login = async (loginData: LoginType) => {
+        try {
+            this.rootStore.appStore.setLoading(true);
+
+            const { data: { login: { token } } } = await UserAPI.login(loginData);
+            token && await this.getSelfData(token);
+
+            this.rootStore.appStore.setLoading(false);
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    register = async (data: User) => {
+      try {
+          this.rootStore.appStore.setLoading(true);
+
+          const { data: { register: { token } } } = await UserAPI.register(data);
+          token && await this.getSelfData(token);
+
+          this.rootStore.appStore.setLoading(false);
+      } catch(err) {
+          console.log(err);
+      }
+    };
+
+    getSelfData = async (token: string) => {
+        try {
+            await setTokenToStorage(token);
+
+            const { data: { auth } } = await UserAPI.getSelfData();
+            this.user = auth;
+            this.isAuth = true;
+
+            await setAuthInAsyncStorage();
+        } catch (err) {
+            console.log(err)
+        }
     };
 
     logout = () => {
@@ -30,12 +73,8 @@ export class UserStore {
         this.isAuth = false;
     };
 
-    setAuth = () => {
-        this.isAuth = true;
-    };
-
     setUserGeolocation = (data: GeolocationType) => {
-       this.geolocation =  data;
+       this.geolocation = data;
     };
 };
 
@@ -45,8 +84,9 @@ decorate(UserStore, {
     isAuth: observable,
 
     login: action,
+    register: action,
+    getSelfData: action,
     logout: action,
-    setAuth: action,
     setUserGeolocation: action,
 });
 
@@ -55,8 +95,9 @@ export type UserStoreType = {
     geolocation: typeof initialGeolocationState,
     isAuth: boolean,
 
-    login: (data: User) => void,
+    login: (data: LoginType) => Promise<void>,
+    register: (data: User) => Promise<void>,
+    getSelfData: (token: string) => Promise<void>,
     logout: () => void,
-    setAuth: () => void,
     setUserGeolocation: (data: GeolocationType) => void,
 }

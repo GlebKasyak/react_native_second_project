@@ -8,18 +8,18 @@ import { Auth } from "../../hoc";
 
 import { NavigationStackComponentProps, NavigationStackProps } from "../../interfaces/common";
 import { User } from "../../interfaces/user";
-import { setAuthInAsyncStorage } from "../../shared/helpers";
 
 import { initialFormData, initialConfirmPasswordData, RegisterData } from "./InitialFormData";
 import { RegisterNames, getInputValidation, getConfirmInputValidation } from "./validation";
+import NavigationUrls from "../../navigation/navigationUrls";
 
 import { StoreType } from "../../store";
 
 type Props = {
-    login: (data: User) => void
+    register: (data: User) => Promise<void>
 };
 
-const RegisterScreenContainer: NavigationStackComponentProps<Props> = ({ login }) => {
+const RegisterScreenContainer: NavigationStackComponentProps<Props> = ({ navigation, register }) => {
     const [formData, setFormData] = useState(initialFormData);
     const [confirmPassword, setConfirmPassword] = useState(initialConfirmPasswordData);
 
@@ -71,14 +71,15 @@ const RegisterScreenContainer: NavigationStackComponentProps<Props> = ({ login }
         if(Object.values(updatedInputs).every(value => !value.error) && !confirmPassword.error) {
             let data = {} as User;
 
-            for(const key in data) {
+            for(const key in formData) {
                 data[formData[key as RegisterNames].name] = formData[key as RegisterNames].value
             };
 
-            login(data);
-            await AsyncStorage.clear();
-            await setAuthInAsyncStorage();
+            register(data);
             setFormData(initialFormData);
+            setConfirmPassword(initialConfirmPasswordData);
+            navigation.navigate(NavigationUrls.LOADER, { screen: NavigationUrls.APP  });
+            await AsyncStorage.clear();
         }
     };
 
@@ -95,7 +96,7 @@ const RegisterScreenContainer: NavigationStackComponentProps<Props> = ({ login }
 
 export default compose<Props & NavigationStackProps, {}>(
     inject<StoreType, {}, Props, {}>(({ rootStore }) => ({
-        login: rootStore.userStore.login
+        register: rootStore.userStore.register
     })),
     Auth,
     observer

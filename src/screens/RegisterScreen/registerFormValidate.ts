@@ -7,7 +7,7 @@ export default {
         length: {
             minimum: 4,
             maximum: 15,
-            message: "^Your firstName must be at least 5 characters"
+            message: "^Your firstName must from 4 to 15 characters"
         }
     },
     secondName: {

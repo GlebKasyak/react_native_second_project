@@ -17,6 +17,9 @@ export const setAuthInAsyncStorage = async () => {
     await AsyncStorage.setItem(StorageKeys.IS_AUTH, JSON.stringify(true));
 };
 
+export const setTokenToStorage = async (data: string) => await AsyncStorage.setItem(StorageKeys.TOKEN, data);
+export const getTokenFromStorage = async () => await AsyncStorage.getItem(StorageKeys.TOKEN);
+
 export const addDistanceToMarkets = (data: Array<MarketType>, location: GeolocationType) => (
     data.map(market => ({
         ...market,

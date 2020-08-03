@@ -5,7 +5,8 @@ enum NavigationUrls {
     MARKET = "Market",
     MAP = "Map",
     LOGIN = "Login",
-    REGISTER = "Register"
+    REGISTER = "Register",
+    LOADER = "Loader"
 };
 
 export default NavigationUrls;

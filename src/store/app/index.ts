@@ -15,7 +15,7 @@ export class AppStore {
         themeName: DEFAULT_THEME,
         theme: THEMES[DEFAULT_THEME]
     } as AppThemeType;
-    isLoading = true;
+    isLoading = false;
 
     setAppTheme = (themeName: THEME_NAMES) => {
         this.appTheme = {
@@ -25,11 +25,8 @@ export class AppStore {
     };
 
     setAppThemeFromStorage = async () => {
-        this.isLoading = true;
         const theme = await AsyncStorage.getItem(StorageKeys.APP_THEME) as THEME_NAMES;
-
         theme && this.setAppTheme(theme);
-        this.isLoading = false;
     };
 
     setLoading = (isLoading: boolean) => {

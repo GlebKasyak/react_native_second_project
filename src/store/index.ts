@@ -7,7 +7,7 @@ class RootStore {
 
     constructor() {
         this.appStore = new AppStore();
-        this.userStore = new UserStore();
+        this.userStore = new UserStore(this);
     };
 };
 

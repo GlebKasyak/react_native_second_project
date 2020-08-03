@@ -24,6 +24,7 @@ const LogoutScreen: NavigationStackComponentProps<Props> = ({ logout, navigation
 
     const onLogout = async () => {
         await AsyncStorage.removeItem(StorageKeys.IS_AUTH);
+        await AsyncStorage.removeItem(StorageKeys.TOKEN);
         logout();
         navigation.navigate(NavigationUrls.LOGIN);
     };

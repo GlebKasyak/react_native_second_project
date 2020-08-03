@@ -4,10 +4,11 @@ import Geolocation from "react-native-geolocation-service";
 
 import { GeolocationType } from "../interfaces/user";
 
-type UseGeolocationType = (fn: (data: GeolocationType) => void) => [() => {}, string];
+type UseGeolocationType = (fn: (data: GeolocationType) => void, isAuth: boolean) => [() => {}, string];
 
-const useGeolocation: UseGeolocationType = setUserGeolocation => {
+const useGeolocation: UseGeolocationType = (setUserGeolocation, isAuth) => {
     const [errorMessage, setErrorMessage] = useState("");
+
     const getGeolocation = useCallback(  async () => {
         if(Platform.OS === "ios") {
             await Geolocation.requestAuthorization("whenInUse");
@@ -43,14 +44,14 @@ const useGeolocation: UseGeolocationType = setUserGeolocation => {
     useEffect(() => {
         let isCanceled = false;
 
-        if(!isCanceled) {
+        if(!isCanceled && isAuth) {
             getGeolocation();
         }
 
         return () => {
             isCanceled = true;
         }
-    }, [getGeolocation]);
+    }, [getGeolocation, isAuth]);
 
     return [getGeolocation, errorMessage];
 };

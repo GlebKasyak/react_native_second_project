@@ -5,11 +5,11 @@ import MapScreen from "./MapScreen";
 import { Container } from "../../components/atoms";
 
 import { NavigationStackComponentProps } from "../../interfaces/common";
-import { addDistanceToMarkets, getCurrentTime } from "../../shared/helpers";
-import defaultMarkets from "../../shared/markets";
+import { getCurrentTime } from "../../shared/helpers";
 import { MarketType } from "../../interfaces/market";
 
 import { GeolocationType } from "../../interfaces/user";
+import { MarketAPI } from "../../apiServices";
 import { StoreType } from "../../store";
 
 type Props = {
@@ -17,30 +17,39 @@ type Props = {
 };
 
 const MapScreenContainer: NavigationStackComponentProps<Props> = ({ screenProps, geolocation }) => {
-    const [isMapReady, serIsMapReady] = useState(false);
-    const [circleRadius, setCircleRadius] = useState(0);
-    const [isEnabled, setIsEnabled] = useState(false);
-    const [markets, setMarkets] = useState<Array<MarketType>>([]);
+    const [state, setState] = useState({
+        isMapReady: false,
+        circleRadius: 0,
+        isEnabled: false,
+        markets: [] as Array<MarketType>
+    });
 
     useEffect(() => {
-        const data = addDistanceToMarkets(defaultMarkets, geolocation) as Array<MarketType>;
-        setMarkets(data)
-    },[addDistanceToMarkets, geolocation, defaultMarkets]);
+        const fetchData = async () => {
+            const { data: { getAllMarkets } } = await MarketAPI.getAllMarkets(geolocation);
+            setState(prevState => ({ ...prevState, markets: getAllMarkets }));
+        };
+
+        fetchData();
+    },[geolocation]);
 
     useEffect(() => {
-        if(isEnabled) {
-            setMarkets(markets.filter(market => {
-                if(market.openingTime < getCurrentTime() && getCurrentTime() < market.closingTime) {
-                    return market
-                }
+        if(state.isEnabled) {
+            setState(prevState => ({
+                ...prevState,
+                markets: state.markets.filter(market => {
+                    if(market.openingTime < getCurrentTime() && getCurrentTime() < market.closingTime) {
+                        return market
+                    }
+                })
             }));
         }
-    }, [isEnabled]);
+    }, [state.isEnabled]);
 
     useEffect(() => {
-        if(circleRadius) {
-            const data = markets.map(market => {
-                if(circleRadius >= market.distance) {
+        if(state.circleRadius) {
+            const data = state.markets.map(market => {
+                if(state.circleRadius >= market.distance) {
                     return {
                         ...market,
                         isVisible: true
@@ -52,22 +61,34 @@ const MapScreenContainer: NavigationStackComponentProps<Props> = ({ screenProps,
                    }
                 }
             });
-            setMarkets(data);
+            setState(prevState => ({ ...prevState, markets: data }))
         }
-    }, [circleRadius]);
+    }, [state.circleRadius]);
+
+    const layoutHandler = () => {
+        setState(prevState => ({ ...prevState, isMapReady: true }))
+    };
+
+    const toggleHandler = (isEnabled: boolean) => {
+        setState(prevState => ({ ...prevState, isEnabled }));
+    };
+
+    const radiusChangeHandler = (value: number) => {
+      setState(prevState => ({ ...prevState, circleRadius: value }))
+    };
 
     return (
         <Container style={{ flex: 1, padding: 0 }} >
             <MapScreen
                 latitude={ geolocation.latitude }
                 longitude={ geolocation.longitude }
-                isMapReady={ isMapReady }
-                onLayout={ () => serIsMapReady(true) }
-                circleRadius={ circleRadius }
-                onRadiusChange={ (value: number) => setCircleRadius(value) }
-                markets={ markets }
-                isEnabled={ isEnabled }
-                onToggle={ () => setIsEnabled(prevValue => !prevValue) }
+                isMapReady={ state.isMapReady }
+                onLayout={ layoutHandler }
+                circleRadius={ state.circleRadius }
+                onRadiusChange={ radiusChangeHandler }
+                markets={ state.markets }
+                isEnabled={ state.isEnabled }
+                onToggle={ toggleHandler }
                 theme={ screenProps.theme }
                 themeName={ screenProps.themeName }
             />

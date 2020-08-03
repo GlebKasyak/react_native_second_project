@@ -3,10 +3,10 @@ import { createBottomTabNavigator } from "react-navigation-tabs";
 
 import { serTabsNavigationOptions } from "../navigationConfig";
 
-import MainNavigation from "./MainNavigation"
-import SettingNavigation from "./SettingNavigation"
-import MapNavigation from "./MapNavigation"
-import LogoutNavigation from "./LogoutNavigation"
+import MainNavigation from "./MainNavigation";
+import SettingNavigation from "./SettingNavigation";
+import MapNavigation from "./MapNavigation";
+import LogoutNavigation from "./LogoutNavigation";
 
 export default createBottomTabNavigator({
     Main: {
@@ -24,6 +24,6 @@ export default createBottomTabNavigator({
     Logout: {
         screen: LogoutNavigation,
         ...serTabsNavigationOptions("Logout", "ios-close-circle")
-    },
+    }
 });
 

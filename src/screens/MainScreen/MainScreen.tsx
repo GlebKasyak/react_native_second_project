@@ -18,7 +18,7 @@ type Props = {
     theme: ThemeType,
     onSearch: (value: string) => void,
     onPress: () => void,
-    onToggle: () => void,
+    onToggle: (data: boolean) => void,
     onNextPage: () => void,
     onOpenMarket: (market: MarketType) => void
 };

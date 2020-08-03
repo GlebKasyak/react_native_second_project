@@ -21,7 +21,7 @@ type Props = {
     onRadiusChange: (value: number) => void,
     markets: Array<MarketType>,
     isEnabled: boolean,
-    onToggle: () => void,
+    onToggle: (isEnabled: boolean) => void,
     theme: ThemeType,
     themeName: THEME_NAMES
 };

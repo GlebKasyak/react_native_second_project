@@ -6,3 +6,5 @@ export { default as SettingScreen } from "./SettingScreen/SettingScreen";
 
 export { default as LoginScreen } from "./LoginScreen/LoginScreenContainer";
 export { default as RegisterScreen } from "./RegisterScreen/RegisterScreenContainer";
+
+export { default as LoaderScreen } from "./LoaderScreen/LoaderScreen";
